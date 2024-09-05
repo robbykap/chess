@@ -29,15 +29,19 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
+
         throw new RuntimeException("Not implemented");
     }
+
 
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
+
         throw new RuntimeException("Not implemented");
     }
+
 
     /**
      * Calculates all the positions a chess piece can move to
