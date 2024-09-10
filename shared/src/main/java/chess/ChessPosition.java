@@ -7,12 +7,12 @@ package chess;
  * signature of the existing methods.
  */
 public class ChessPosition {
-    int row;
-    int col;
+    static int row;
+    static int col;
 
     public ChessPosition(int row, int col) {
-        this.row = row;
-        this.col = col;
+        ChessPosition.row = row;
+        ChessPosition.col = col;
     }
 
 
@@ -21,7 +21,7 @@ public class ChessPosition {
      * 1 codes for the bottom row
      */
     public int getRow() {
-        return this.row;
+        return ChessPosition.row;
     }
 
 
@@ -30,6 +30,6 @@ public class ChessPosition {
      * 1 codes for the left row
      */
     public int getColumn() {
-        return this.col;
+        return ChessPosition.col;
     }
 }
