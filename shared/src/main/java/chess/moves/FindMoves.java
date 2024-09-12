@@ -4,6 +4,7 @@ import chess.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Dictionary;
 
 public class FindMoves {
     public static Collection<ChessMove> getMoves(ChessBoard board, ChessPosition myPosition, int[][] directions) {
@@ -46,5 +47,72 @@ public class FindMoves {
             }
         }
         return moves;
+    }
+
+        public static Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition,
+                                                  ChessGame.TeamColor currColor, Dictionary<String, Integer> info) {
+        Collection<ChessMove> moves = new ArrayList<>();
+
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+
+        // Forward
+        int forward = row + info.get("forward");
+        ChessPosition pos = new ChessPosition(forward, col);
+        ChessPiece pieceAtPos = board.getPiece(pos);
+        if (pieceAtPos == null) {
+            // Moves forward two, if it's the first move
+            initial(board, myPosition, info, moves);
+            promote(myPosition, info, pos, moves);
+        }
+
+        // Attack right
+        int right = col + info.get("attack right");
+        attack(board, myPosition, currColor, info, forward, right, moves);
+
+        // Attack left
+        int left = col + info.get("attack left");
+        attack(board, myPosition, currColor, info, forward, left, moves);
+
+        return moves;
+    }
+
+    private static void attack(ChessBoard board, ChessPosition myPosition,
+                               ChessGame.TeamColor currColor, Dictionary<String, Integer> info,
+                               int forward, int attackSide, Collection<ChessMove> moves) {
+        ChessPosition pos;
+        ChessPiece pieceAtPos;
+        if (attackSide > 0 && attackSide <= 8) {
+            pos = new ChessPosition(forward, attackSide);
+            pieceAtPos = board.getPiece(pos);
+            if (pieceAtPos != null && pieceAtPos.getTeamColor() != currColor) {
+                promote(myPosition, info, pos, moves);
+            }
+        }
+    }
+
+    private static void initial(ChessBoard board, ChessPosition myPosition,
+                                Dictionary<String, Integer> info,
+                                Collection<ChessMove> moves) {
+        if (myPosition.getRow() == info.get("start")) {
+            ChessPosition pos = new ChessPosition(myPosition.getRow() + info.get("initial"), myPosition.getColumn());
+            ChessPiece pieceAtPos = board.getPiece(pos);
+            if (pieceAtPos == null) {
+                moves.add(new ChessMove(myPosition, pos, null));
+            }
+        }
+    }
+
+
+    private static void promote(ChessPosition myPosition,
+                                Dictionary<String, Integer> info,
+                                ChessPosition pos, Collection<ChessMove> moves) {
+        if (pos.getRow() == info.get("promotion")) {
+            for (var type : new ChessPiece.PieceType[]{ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.ROOK, ChessPiece.PieceType.QUEEN}) {
+                moves.add(new ChessMove(myPosition, pos, type));
+            }
+        } else {
+            moves.add(new ChessMove(myPosition, pos, null));
+        }
     }
 }
