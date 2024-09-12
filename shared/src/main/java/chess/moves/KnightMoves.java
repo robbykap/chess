@@ -9,6 +9,17 @@ import java.util.Collection;
 public class KnightMoves {
 
     public static Collection<ChessMove> getMoves(ChessBoard board, ChessPosition myPosition) {
-        return null;
+
+        int[][] directions = {
+                {1, 2},
+                {2, 1},
+                {2, -1},
+                {1, -2},
+                {-1, -2},
+                {-2, -1},
+                {-2, 1},
+                {-1, 2}
+        };
+        return FindMoves.getMoves(board, myPosition, directions);
     }
 }
