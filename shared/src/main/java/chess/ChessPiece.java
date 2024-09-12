@@ -1,6 +1,9 @@
 package chess;
 
+import chess.moves.*;
+
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -9,8 +12,12 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessPiece {
+    private final ChessGame.TeamColor pieceColor;
+    private final PieceType type;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+        this.pieceColor = pieceColor;
+        this.type = type;
     }
 
     /**
@@ -30,7 +37,7 @@ public class ChessPiece {
      */
     public ChessGame.TeamColor getTeamColor() {
 
-        throw new RuntimeException("Not implemented");
+        return pieceColor;
     }
 
 
@@ -39,7 +46,7 @@ public class ChessPiece {
      */
     public PieceType getPieceType() {
 
-        throw new RuntimeException("Not implemented");
+        return type;
     }
 
 
@@ -51,6 +58,26 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        return switch (type) {
+            case KING -> KingMoves.getMoves(board, myPosition);
+            case QUEEN -> QueenMoves.getMoves(board, myPosition);
+            case BISHOP -> BishopMoves.getMoves(board, myPosition);
+            case KNIGHT -> KnightMoves.getMoves(board, myPosition);
+            case ROOK -> RookMoves.getMoves(board, myPosition);
+            case PAWN -> PawnMoves.getMoves(board, myPosition);
+        };
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPiece that = (ChessPiece) o;
+        return pieceColor == that.pieceColor && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type);
     }
 }
