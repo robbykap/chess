@@ -36,6 +36,18 @@ public class ChessBoard {
         return chessBoard[position.getRow() - 1][position.getColumn() - 1];
     }
 
+    public ChessPiece findPiece(ChessPiece.PieceType type, ChessGame.TeamColor color) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                ChessPiece piece = chessBoard[i][j];
+                if (piece != null && piece.getPieceType() == type && piece.getTeamColor() == color) {
+                    return piece;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
