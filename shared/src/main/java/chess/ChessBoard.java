@@ -1,7 +1,7 @@
 package chess;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -10,6 +10,7 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessBoard {
+    private final Map<ChessPosition, ChessPiece> boardState = new HashMap<>();
     private ChessPiece[][] chessBoard = new ChessPiece[8][8];
 
     public ChessBoard() {
@@ -23,6 +24,7 @@ public class ChessBoard {
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
         chessBoard[position.getRow() - 1][position.getColumn() - 1] = piece;
+        boardState.put(position, piece);
     }
 
     /**
@@ -46,6 +48,13 @@ public class ChessBoard {
             }
         }
         return null;
+    }
+
+    public List<ChessPiece> getTeamPieces(ChessGame.TeamColor color) {
+        return boardState.values().stream()
+                .filter(Objects::nonNull)
+                .filter(piece -> piece.getTeamColor() == color)
+                .collect(Collectors.toList());
     }
 
     /**
