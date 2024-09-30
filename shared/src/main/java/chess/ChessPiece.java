@@ -49,6 +49,18 @@ public class ChessPiece {
         return type;
     }
 
+    public ChessPosition getPosition(ChessBoard board) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                ChessPosition position = new ChessPosition(i + 1, j + 1);
+                if (board.getPiece(position) == this) {
+                    return position;
+                }
+            }
+        }
+        return null;
+    }
+
 
     /**
      * Calculates all the positions a chess piece can move to
@@ -66,6 +78,14 @@ public class ChessPiece {
             case ROOK -> RookMoves.getMoves(board, myPosition);
             case PAWN -> PawnMoves.getMoves(board, myPosition);
         };
+    }
+
+    @Override
+    public String toString() {
+        return "ChessPiece{" +
+                "pieceColor=" + pieceColor +
+                ", type=" + type +
+                '}';
     }
 
     @Override
