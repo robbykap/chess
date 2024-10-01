@@ -92,7 +92,8 @@ public class ChessBoard {
     @Override
     public String toString() {
         return "ChessBoard{" +
-                "chessBoard=" + Arrays.toString(chessBoard) +
+                "boardState=" + boardState +
+                ", chessBoard=" + Arrays.toString(chessBoard) +
                 '}';
     }
 
@@ -101,11 +102,11 @@ public class ChessBoard {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ChessBoard that = (ChessBoard) o;
-        return Objects.deepEquals(chessBoard, that.chessBoard);
+        return Objects.equals(boardState, that.boardState) && Objects.deepEquals(chessBoard, that.chessBoard);
     }
 
     @Override
     public int hashCode() {
-        return Arrays.deepHashCode(chessBoard);
+        return Objects.hash(boardState, Arrays.deepHashCode(chessBoard));
     }
 }
