@@ -17,6 +17,7 @@ public class ChessGame {
     private ChessBoard board = new ChessBoard();
 
     public ChessGame() {
+        board.resetBoard();
     }
 
 
@@ -80,6 +81,7 @@ public class ChessGame {
     private void undoMove(ChessPiece piece, ChessMove move, ChessPiece capturedPiece) {
         board.addPiece(move.getStartPosition(), piece);
         board.addPiece(move.getEndPosition(), capturedPiece);
+
     }
 
     /**
@@ -89,7 +91,32 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(move.getStartPosition());
+        if (piece == null) {
+            throw new InvalidMoveException("No piece at start position");
+        }
+
+        if (piece.getTeamColor() != teamTurn) {
+            throw new InvalidMoveException("Not this team's turn");
+        }
+
+        Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
+        if (validMoves == null || !validMoves.contains(move)) {
+            throw new InvalidMoveException("Invalid move");
+        }
+
+        if (move.getPromotionPiece() != null) {
+            piece = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+        }
+
+        ChessPiece capturedPiece = simulateMove(piece, move);
+
+        if (isInCheck(teamTurn)) {
+            undoMove(piece, move, capturedPiece);
+            throw new InvalidMoveException("Move puts own king in check");
+        }
+
+        teamTurn = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
     /**
