@@ -109,12 +109,7 @@ public class ChessGame {
             piece = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
         }
 
-        ChessPiece capturedPiece = simulateMove(piece, move);
-
-        if (isInCheck(teamTurn)) {
-            undoMove(piece, move, capturedPiece);
-            throw new InvalidMoveException("Move puts own king in check");
-        }
+        simulateMove(piece, move);
 
         teamTurn = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
     }
