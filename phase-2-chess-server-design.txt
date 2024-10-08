@@ -1,0 +1,100 @@
+actor Client
+participant Server
+participant Handler
+participant Service
+participant DataAccess
+database db
+
+entryspacing 0.9
+group #navy Registration #white
+Client -> Server: [POST] /user\n{"username":" ", "password":" ", "email":" "}
+Server -> Handler: {"username":" ", "password":" ", "email":" "}
+Handler -> Service: register(RegisterRequest)
+Service -> DataAccess: getUser(username)
+DataAccess -> db:FIND UserData FROM username
+DataAccess --> Service: null
+Service -> DataAccess:createUser(userData)
+DataAccess -> db:ADD UserData
+Service -> DataAccess:createAuth(authData)
+DataAccess -> db:ADD AuthData
+Service --> Handler: RegisterResult
+Handler --> Server: {"username" : " ", "authToken" : " "}
+Server --> Client: 200\n{"username" : " ", "authToken" : " "}
+end
+
+group #orange Login #white
+Client -> Server: [POST] /session\n{ "username":"", "password":"" }
+Server -> Handler: { "username":"", "password":"" }
+Handler -> Service: login(LoginRequest)
+Service -> DataAccess: getUser(username)
+DataAccess -> db: FIND UserData FROM username
+DataAccess --> Service: null
+Service --> Handler: LoginResult
+Handler --> Server: { "message": "Error: unauthorized" };\n{ "message": "Error: (description of error)" }
+Server --> Client: [401] { "message": "Error: unauthorized" };\n[500] { "message": "Error: (description of error)" }
+DataAccess --> Service: true
+Service -> DataAccess:createAuth(authData)
+DataAccess -> db: ADD AuthData
+Service --> Handler: LoginResult
+Handler --> Server: {"username" : " ", "authToken" : " "}
+Server --> Client: [200} {"username" : " ", "authToken" : " "}
+end
+
+group #green Logout #white
+Client -> Server: [DELETE] /session\nauthToken
+Server -> Handler: authToken
+Handler -> Service: logout(authToken)
+Service -> DataAccess: deleteAuth(authToken)
+DataAccess -> db: DELETE authToken FROM user
+DataAccess --> Service: false
+Service --> Handler: LogoutResult
+Handler --> Server: { "message": "Error: unauthorized" };\n{ "message": "Error: (description of error)" }
+Server --> Client: [401] { "message": "Error: unauthorized" };\n[500] { "message": "Error: (description of error)" }
+DataAccess --> Service: true
+Service --> Handler: LogoutResult
+Handler --> Server: {}
+Server --> Client: [200} {}
+end
+
+group #red List Games #white
+Client -> Server: [GET] /game\nauthToken
+Server -> Handler: authToken
+Handler -> Service: listGames(authToken)
+Service -> DataAccess: checkAuth(authToken)
+DataAccess -> db: FIND username FROM auth
+DataAccess --> Service: false
+Service --> Handler: ListGamesResult
+Handler --> Server: { "message": "Error: unauthorized" };\n{ "message": "Error: (description of error)" }
+Server --> Client: [401] { "message": "Error: unauthorized" };\n[500] { "message": "Error: (description of error)" }
+DataAccess --> Service: true
+Service --> Handler: ListGamesResult
+Handler --> Server: { "games": [{ "gameID": 1234, "whiteUsername":"", "blackUsername":"", "gameName:""} ]}
+Server --> Client: [200] { "games": [{ "gameID": 1234, "whiteUsername":"", "blackUsername":"", "gameName:""} ]}
+end
+
+group #purple Create Game #white
+Client -> Server: [POST] /game\nauthToken\n{gameName}
+Server -> Handler: authToken;\n{ "gameName":"" }
+Handler -> Service: createGame(authToken, gameName)
+Service -> DataAccess: checkAuth(authToken)
+DataAccess -> db: FIND username FROM auth
+DataAccess --> Service: false
+Service --> Handler: CreateGameResult
+Handler --> Server: { "message": "Error: bad request" };\n{ "message": "Error: unauthorized" };\n{ "message": "Error: (description of error)" }
+Server --> Client: [400] { "message": "Error: bad request" };\n[401] { "message": "Error: unauthorized" };\n[500] { "message": "Error: (description of error)" }
+DataAccess --> Service: true
+Service -> DataAccess: createGame(gameID, whiteUsername, blackUsername, gameName)
+DataAccess -> db: CREATE game from gameID,\n whiteUsername, blackUsername,\ngameName
+Service --> Handler: CreateGameResult
+Handler --> Server: { "gameID": 1234 }
+Server --> Client: [200] { "gameID": 1234 }
+
+end
+
+group #yellow Join Game #black
+Client -> Server: [PUT] /game\nauthToken\n{playerColor, gameID}
+end
+
+group #gray Clear application #white
+Client -> Server: [DELETE] /db
+end
