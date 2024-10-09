@@ -26,65 +26,71 @@ group #orange Login #white
 Client -> Server: [POST] /session\n{ "username":"", "password":"" }
 Server -> Handler: { "username":"", "password":"" }
 Handler -> Service: login(LoginRequest)
-Service -> DataAccess: getUser(username)
-DataAccess -> db: FIND UserData FROM username
+Service -> DataAccess: getUser(username, password)
+DataAccess -> db: GET userData FROM username
 DataAccess --> Service: null
-Service --> Handler: LoginResult
+Service --> Handler:error
 Handler --> Server: { "message": "Error: unauthorized" };\n{ "message": "Error: (description of error)" }
 Server --> Client: [401] { "message": "Error: unauthorized" };\n[500] { "message": "Error: (description of error)" }
-DataAccess --> Service: true
-Service -> DataAccess:createAuth(authData)
-DataAccess -> db: ADD AuthData
+DataAccess --> Service:userData
+Service -> DataAccess:createAuth(userData)
+DataAccess -> db: ADD authData TO auth
 Service --> Handler: LoginResult
 Handler --> Server: {"username" : " ", "authToken" : " "}
 Server --> Client: [200} {"username" : " ", "authToken" : " "}
 end
 
 group #green Logout #white
-Client -> Server: [DELETE] /session\nauthToken
-Server -> Handler: authToken
-Handler -> Service: logout(authToken)
-Service -> DataAccess: deleteAuth(authToken)
-DataAccess -> db: DELETE authToken FROM user
-DataAccess --> Service: false
-Service --> Handler: LogoutResult
+Client -> Server: [DELETE] /session\n { "authToken":"" }
+Server -> Handler: { "authToken":"" }
+Handler -> Service: logout(LogoutRequest)
+Service -> DataAccess: varifyAuth(authToken)
+DataAccess -> db: GET authData FROM authToken
+DataAccess --> Service: null
+Service --> Handler:error
 Handler --> Server: { "message": "Error: unauthorized" };\n{ "message": "Error: (description of error)" }
 Server --> Client: [401] { "message": "Error: unauthorized" };\n[500] { "message": "Error: (description of error)" }
-DataAccess --> Service: true
+DataAccess --> Service: authData
+Service -> DataAccess: deleteAuth(authData)
+DataAccess -> db: DELETE authToken FROM auth
 Service --> Handler: LogoutResult
 Handler --> Server: {}
 Server --> Client: [200} {}
 end
 
 group #red List Games #white
-Client -> Server: [GET] /game\nauthToken
-Server -> Handler: authToken
-Handler -> Service: listGames(authToken)
-Service -> DataAccess: checkAuth(authToken)
-DataAccess -> db: FIND username FROM auth
-DataAccess --> Service: false
-Service --> Handler: ListGamesResult
+Client -> Server: [GET] /game\n { "authToken":"" }
+Server -> Handler: { "authToken":"" }
+Handler -> Service: listGames(ListGamesRequest)
+Service -> DataAccess: varifyAuth(authToken)
+DataAccess -> db: GET authData FROM authToken
+DataAccess --> Service: null
+Service --> Handler:error
 Handler --> Server: { "message": "Error: unauthorized" };\n{ "message": "Error: (description of error)" }
 Server --> Client: [401] { "message": "Error: unauthorized" };\n[500] { "message": "Error: (description of error)" }
-DataAccess --> Service: true
+DataAccess --> Service: authData
+Service -> DataAccess: getGames()
+DataAccess -> db: GET games
+DataAccess --> Service: games
 Service --> Handler: ListGamesResult
 Handler --> Server: { "games": [{ "gameID": 1234, "whiteUsername":"", "blackUsername":"", "gameName:""} ]}
 Server --> Client: [200] { "games": [{ "gameID": 1234, "whiteUsername":"", "blackUsername":"", "gameName:""} ]}
 end
 
 group #purple Create Game #white
-Client -> Server: [POST] /game\nauthToken\n{gameName}
-Server -> Handler: authToken;\n{ "gameName":"" }
-Handler -> Service: createGame(authToken, gameName)
-Service -> DataAccess: checkAuth(authToken)
-DataAccess -> db: FIND username FROM auth
-DataAccess --> Service: false
-Service --> Handler: CreateGameResult
+Client -> Server: [POST] /game\n { "authToken":"", "gameName":"" }
+Server -> Handler: { "authToken":"", "gameName":"" }
+Handler -> Service: createGame(CreateGameRequest)
+Service -> DataAccess: varifyAuth(authToken)
+DataAccess -> db: GET authData FROM authToken
+DataAccess --> Service: null
+Service --> Handler:error
 Handler --> Server: { "message": "Error: bad request" };\n{ "message": "Error: unauthorized" };\n{ "message": "Error: (description of error)" }
 Server --> Client: [400] { "message": "Error: bad request" };\n[401] { "message": "Error: unauthorized" };\n[500] { "message": "Error: (description of error)" }
-DataAccess --> Service: true
-Service -> DataAccess: createGame(gameID, whiteUsername, blackUsername, gameName)
-DataAccess -> db: CREATE game from gameID,\n whiteUsername, blackUsername,\ngameName
+DataAccess --> Service: authData
+Service -> DataAccess: createGame(game)
+DataAccess -> db: INSERT game
+DataAccess --> Service: gameID
 Service --> Handler: CreateGameResult
 Handler --> Server: { "gameID": 1234 }
 Server --> Client: [200] { "gameID": 1234 }
@@ -92,9 +98,52 @@ Server --> Client: [200] { "gameID": 1234 }
 end
 
 group #yellow Join Game #black
-Client -> Server: [PUT] /game\nauthToken\n{playerColor, gameID}
+Client -> Server: [PUT] /game\n { "authToken":"", "playerColor": "WHITE/BLACK", "gameID": 1234 }
+Server -> Handler: { "authToken":"", "playerColor": "WHITE/BLACK", "gameID": 1234 }
+Handler -> Service: joinGame(JoinGameRequest)
+Service -> DataAccess: varifyAuth(authToken)
+DataAccess -> db: GET authData FROM authToken
+DataAccess --> Service: null
+Service --> Handler:error
+Handler --> Server: { "message": "Error: bad request" };\n{ "message": "Error: unauthorized" };\n{ "message": "Error: (description of error)" }
+Server --> Client: [400] { "message": "Error: bad request" };\n[401] { "message": "Error: unauthorized" };\n[500] { "message": "Error: (description of error)" }
+DataAccess --> Service: authData
+Service -> DataAccess: getGame(gameID)
+DataAccess -> db: GET gameData FROM gameID
+DataAccess --> Service: gameData
+Service --> Service: Set user from authData as\n"whiteUsername" or\n"blackUsername"
+Service --> Handler:error
+Handler --> Server: { "message": "Error: already taken" }
+Server --> Client: [403] { "message": "Error: already taken" }
+Service -> DataAccess: updateGame(gameData)
+DataAccess -> db: UPDATE gameData
+DataAccess --> Service: void
+Service --> Handler: JoinGameResult
+Handler --> Server: {}
+Server --> Client: [200] {}
 end
 
 group #gray Clear application #white
 Client -> Server: [DELETE] /db
+Server -> Handler: {}
+Handler -> Service: clearDB()
+Service -> DataAccess: clearAuth()
+DataAccess -> db: REMOVE AuthDAO
+Service --> Handler:error
+Handler --> Server: { "message": "Error: (description of error)" }
+Server --> Client: [500] { "message": "Error: (description of error)" }
+Service -> DataAccess: clearUsers()
+DataAccess -> db: REMOVE UserDAO
+Service --> Handler:error
+Handler --> Server: { "message": "Error: (description of error)" }
+Server --> Client: [500] { "message": "Error: (description of error)" }
+Service -> DataAccess: clearGames()
+DataAccess -> db: REMOVE GameDAO
+Service --> Handler:error
+Handler --> Server: { "message": "Error: (description of error)" }
+Server --> Client: [500] { "message": "Error: (description of error)" }
+DataAccess --> Service: void
+Service --> Handler: ClearDBReuslt
+Handler --> Server: {}
+Server --> Client: [200] {}
 end
