@@ -4,7 +4,6 @@ import spark.*;
 
 import service.*;
 import dataaccess.*;
-import com.google.gson.Gson;
 
 public class Server {
     private AuthDAO authDAO = new MemoryAuthDAO();
@@ -45,9 +44,9 @@ public class Server {
     }
 
     public Object clear(Request req, Response resp) {
-        authDAO.clear();
-        gameDAO.clear();
-        userDAO.clear();
+        authDAO.clearAuths();
+        gameDAO.clearGames();
+        userDAO.clearUsers();
         return "{}";
     }
 }

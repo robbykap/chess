@@ -2,10 +2,11 @@ package dataaccess;
 
 import model.UserData;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryUserDAO implements UserDAO {
-    final private HashMap<String, UserData> users = new HashMap<>();
+    private int size = 0;
+    final private ConcurrentHashMap<String, UserData> users = new ConcurrentHashMap<>();
 
 
     @Override
@@ -23,13 +24,19 @@ public class MemoryUserDAO implements UserDAO {
             getUser(user.username());
         } catch (DataAccessException e) {
             users.put(user.username(), user);
+            size++;
             return;
         }
         throw new DataAccessException("User already exists: " + user.username());
     }
 
     @Override
-    public void clear() {
+    public void clearUsers() {
         users.clear();
+        size = 0;
+    }
+
+    public int size() {
+        return size;
     }
 }

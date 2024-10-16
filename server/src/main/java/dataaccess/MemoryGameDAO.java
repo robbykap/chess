@@ -3,10 +3,11 @@ package dataaccess;
 import model.GameData;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryGameDAO implements GameDAO {
-    final private HashMap<Integer, GameData> games = new HashMap<>();
+    private int size = 0;
+    final private ConcurrentHashMap<Integer, GameData> games = new ConcurrentHashMap<>();
 
     @Override
     public void createGame(GameData game) throws DataAccessException {
@@ -14,10 +15,11 @@ public class MemoryGameDAO implements GameDAO {
             throw new DataAccessException("Game already exists, gameID: " + game.gameID());
         }
         games.put(game.gameID(), game);
+        size++;
     }
 
     @Override
-    public Collection<GameData> listGames() {
+    public Collection<GameData> getGames() {
         return games.values();
     }
 
@@ -33,6 +35,7 @@ public class MemoryGameDAO implements GameDAO {
     @Override
     public void updateGame(GameData game) throws DataAccessException {
         try {
+            games.remove(game.gameID());
             games.put(game.gameID(), game);
         } catch (Exception e) {
             throw new DataAccessException("Error updating game, gameID: " + game.gameID());
@@ -40,7 +43,8 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public void clear() {
+    public void clearGames() {
         games.clear();
+        size = 0;
     }
 }

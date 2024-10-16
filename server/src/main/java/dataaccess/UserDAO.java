@@ -8,7 +8,7 @@ public interface UserDAO {
 
     void createUser(UserData user) throws DataAccessException;
 
-    void clear();
+    void clearUsers();
 
 
 

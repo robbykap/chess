@@ -8,6 +8,7 @@ import model.AuthData;
 import model.GameData;
 
 import java.util.Collection;
+import java.util.UUID;
 
 public class GameService {
     private final GameDAO gameDAO;
@@ -18,25 +19,25 @@ public class GameService {
         this.authDAO = authDAO;
     }
 
-    public Collection<GameData> listGames(String authToken) throws UnathorizedException {
+    public Collection<GameData> listGames(String authToken) throws UnauthorizedException {
         try {
-            authDAO.getAuth(authToken);
+            authDAO.verifyAuth(authToken);
         } catch (DataAccessException e) {
-            throw new UnathorizedException(e.getMessage());
+            throw new UnauthorizedException(e.getMessage());
         }
-        return gameDAO.listGames();
+        return gameDAO.getGames();
     };
 
-    public int createGame(String authToken, String gameName) throws BadRequestException, UnathorizedException, DataAccessException {
+    public int createGame(String authToken, String gameName) throws BadRequestException, UnauthorizedException, DataAccessException {
         try {
-            authDAO.getAuth(authToken);
+            authDAO.verifyAuth(authToken);
         } catch (DataAccessException e) {
-            throw new UnathorizedException(e.getMessage());
+            throw new UnauthorizedException(e.getMessage());
         }
 
         int gameID;
         do {
-            gameID = (int) (Math.random() * Integer.MAX_VALUE);
+            gameID = UUID.randomUUID().hashCode();
         } while (gameDAO.getGame(gameID) != null);
 
         try {
@@ -52,12 +53,12 @@ public class GameService {
         return gameID;
     };
 
-    public boolean joinGame(String authToken, String color, int gameID) throws BadRequestException, UnathorizedException {
+    public boolean joinGame(String authToken, String color, int gameID) throws BadRequestException, UnauthorizedException {
         AuthData authData;
         try {
-            authData = authDAO.getAuth(authToken);
+            authData = authDAO.verifyAuth(authToken);
         } catch (DataAccessException e) {
-            throw new UnathorizedException(e.getMessage());
+            throw new UnauthorizedException(e.getMessage());
         }
         String username = authData.username();
 
@@ -73,7 +74,7 @@ public class GameService {
 
         if (color.equals("white")) {
             if (whiteUsername != null) {
-                return false;
+                throw new BadRequestException("White player already joined");
             }
             try {
                 gameDAO.updateGame(new GameData(gameID, username, blackUsername, game.gameName(), game.game()));
@@ -82,7 +83,7 @@ public class GameService {
             }
         } else if (color.equals("black")) {
             if (blackUsername != null) {
-                return false;
+                throw new BadRequestException("Black player already joined");
             }
             try {
                 gameDAO.updateGame(new GameData(gameID, whiteUsername, username, game.gameName(), game.game()));
@@ -96,6 +97,6 @@ public class GameService {
     };
 
     public void clear() throws DataAccessException {
-        gameDAO.clear();
+        gameDAO.clearGames();
     };
 }

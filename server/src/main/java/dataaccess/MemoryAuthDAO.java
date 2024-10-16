@@ -2,18 +2,20 @@ package dataaccess;
 
 import model.AuthData;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryAuthDAO implements AuthDAO {
-    final private HashMap<String, String> auths = new HashMap<>();
+    private int size = 0;
+    final private ConcurrentHashMap<String, String> auths = new ConcurrentHashMap<>();
 
     @Override
     public void createAuth(AuthData auth) {
         auths.put(auth.authToken(), auth.username());
+        size++;
     }
 
     @Override
-    public AuthData getAuth(String authToken) throws DataAccessException {
+    public AuthData verifyAuth(String authToken) throws DataAccessException {
         try {
             return new AuthData(auths.get(authToken), authToken);
         } catch (NullPointerException e) {
@@ -24,10 +26,16 @@ public class MemoryAuthDAO implements AuthDAO {
     @Override
     public void deleteAuth(String authToken) {
         auths.remove(authToken);
+        size--;
     }
 
     @Override
-    public void clear() {
+    public void clearAuths() {
         auths.clear();
+        size = 0;
+    }
+
+    public int size() {
+        return size;
     }
 }

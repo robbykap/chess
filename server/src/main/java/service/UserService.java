@@ -31,12 +31,13 @@ public class UserService {
         return authData;
     };
 
-    public AuthData login(UserData userData) throws UnathorizedException {
+    public AuthData login(UserData userData) throws UnauthorizedException {
         String username = userData.username();
         String password = userData.password();
 
         try {
             UserData user = userDAO.getUser(username);
+
             if (user.password().equals(password)) {
 
                 String authToken = UUID.randomUUID().toString();
@@ -47,26 +48,26 @@ public class UserService {
                 return authData;
 
             } else {
-                throw new UnathorizedException("Invalid password");
+                throw new UnauthorizedException("Invalid password");
             }
 
         } catch (DataAccessException e) {
-            throw new UnathorizedException(e.getMessage());
+            throw new UnauthorizedException(e.getMessage());
         }
     };
 
-    public void logout(String authToken) throws UnathorizedException {
+    public void logout(String authToken) throws UnauthorizedException {
         try {
-            authDAO.getAuth(authToken);
+            authDAO.verifyAuth(authToken);
         } catch (DataAccessException e) {
-            throw new UnathorizedException(e.getMessage());
+            throw new UnauthorizedException(e.getMessage());
         }
 
         authDAO.deleteAuth(authToken);
     };
 
     public void clear() {
-        userDAO.clear();
-        authDAO.clear();
+        userDAO.clearUsers();
+        authDAO.clearAuths();
     }
 }
