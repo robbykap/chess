@@ -38,7 +38,7 @@ public class UserHandler {
             return AlreadyTaken.response(resp);
         }
 
-    };
+    }
 
     public Object login(Request req, Response resp) {
         LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
@@ -51,7 +51,7 @@ public class UserHandler {
             return Unauthorized.response(resp);
         }
 
-    };
+    }
 
     public Object logout(Request req, Response resp) {
         LogoutRequest logoutRequest = new LogoutRequest(req.headers("Authorization"));
@@ -63,7 +63,6 @@ public class UserHandler {
         } catch (UnauthorizedException e) {
             return Unauthorized.response(resp);
         }
-    };
-
+    }
 
 }

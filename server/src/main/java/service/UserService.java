@@ -1,7 +1,11 @@
 package service;
 
-import dataaccess.*;
-
+import dataaccess.AuthDAO;
+import dataaccess.UserDAO;
+import dataaccess.AlreadyTakenException;
+import dataaccess.BadRequestException;
+import dataaccess.UnauthorizedException;
+import dataaccess.DataAccessException;
 
 import model.AuthData;
 import model.UserData;
@@ -27,16 +31,16 @@ public class UserService {
         try {
             userDAO.createUser(userData);
 
+            // Create the AuthData to insert into the AuthDAO
+            String authToken = UUID.randomUUID().toString();
+            AuthData authData = new AuthData(userData.username(), authToken);
+            authDAO.createAuth(authData);
+
+            return authData;
+
         } catch (DataAccessException e) {
             throw new AlreadyTakenException("User already exists");
         }
-
-        // Create the AuthData to insert into the AuthDAO
-        String authToken = UUID.randomUUID().toString();
-        AuthData authData = new AuthData(userData.username(), authToken);
-        authDAO.createAuth(authData);
-
-        return authData;
     };
 
     public AuthData login(String username, String password) throws UnauthorizedException, BadRequestException {
@@ -44,7 +48,7 @@ public class UserService {
         try {
             UserData user = userDAO.getUser(username);
 
-            // Check if the password is correct, throw an UnauthorizedException if it is not
+            // Check if the password is incorrect, throw an UnauthorizedException if it is not
             if (user.password().equals(password)) {
 
                 // Create an AuthData and insert it into the AuthDAO
@@ -64,15 +68,16 @@ public class UserService {
     };
 
     public void logout(String authToken) throws UnauthorizedException {
-        // Get the AuthData from the AuthDAO, throw an UnauthorizedException if it is not found
+        // Verify the authToken, throw UnauthorizedException if invalid
         try {
             authDAO.getAuth(authToken);
 
+            authDAO.deleteAuth(authToken);
+
         } catch (DataAccessException e) {
-            throw new UnauthorizedException(e.getMessage());
+            throw new UnauthorizedException("Invalid authToken");
         }
 
-        authDAO.deleteAuth(authToken);
     };
 
 }

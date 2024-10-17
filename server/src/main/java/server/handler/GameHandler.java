@@ -23,7 +23,7 @@ public class GameHandler {
         this.gameService = gameService;
     }
 
-    public Object listGames(Request req, Response resp) throws DataAccessException {
+    public Object listGames(Request req, Response resp) {
         ListGameRequest listGameRequest = new ListGameRequest(req.headers("Authorization"));
 
         try{
@@ -33,9 +33,9 @@ public class GameHandler {
         } catch (UnauthorizedException e) {
             return Unauthorized.response(resp);
         }
-    };
+    }
 
-    public Object createGame(Request req, Response resp) throws DataAccessException {
+    public Object createGame(Request req, Response resp) {
         CreateGameRequest createGameRequest = new Gson().fromJson(req.body(), CreateGameRequest.class);
         createGameRequest = new CreateGameRequest(req.headers("Authorization"), createGameRequest.gameName());
 
@@ -50,7 +50,7 @@ public class GameHandler {
             return Unauthorized.response(resp);
         }
 
-    };
+    }
 
     public Object joinGame(Request req, Response resp) {
         JoinGameRequest joinGameData = new Gson().fromJson(req.body(), JoinGameRequest.class);
@@ -69,5 +69,5 @@ public class GameHandler {
         } catch (AlreadyTakenException e) {
             return AlreadyTaken.response(resp);
         }
-    };
+    }
 }

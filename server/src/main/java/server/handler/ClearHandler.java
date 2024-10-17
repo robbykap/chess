@@ -4,7 +4,6 @@ import server.response.clear.*;
 
 import service.ClearService;
 
-import spark.Request;
 import spark.Response;
 
 public class ClearHandler {
@@ -14,7 +13,7 @@ public class ClearHandler {
         this.clearService = clearService;
     }
 
-    public Object clear(Request req, Response resp) {
+    public Object clear(Response resp) {
         clearService.clear();
         return ClearResult.response(resp);
     }

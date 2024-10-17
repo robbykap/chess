@@ -7,26 +7,34 @@ import service.*;
 import dataaccess.*;
 
 public class Server {
-    private final AuthDAO authDAO = new MemoryAuthDAO();
-    private final GameDAO gameDAO = new MemoryGameDAO();
-    private final UserDAO userDAO = new MemoryUserDAO();
+    private UserHandler userHandler;
+    private GameHandler gameHandler;
+    private ClearHandler clearHandler;
 
-    private final GameService gameService = new GameService(gameDAO, authDAO);
-    private final UserService userService = new UserService(userDAO, authDAO);
-    private final ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
+    private void initializeComponents() {
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameDAO gameDAO = new MemoryGameDAO();
+        UserDAO userDAO = new MemoryUserDAO();
 
-    private final UserHandler userHandler = new UserHandler(userService);
-    private final GameHandler gameHandler = new GameHandler(gameService);
-    private final ClearHandler clearHandler = new ClearHandler(clearService);
+        GameService gameService = new GameService(gameDAO, authDAO);
+        UserService userService = new UserService(userDAO, authDAO);
+        ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
 
-    public Server() {};
+        userHandler = new UserHandler(userService);
+        gameHandler = new GameHandler(gameService);
+        clearHandler = new ClearHandler(clearService);
+    }
+
+    public Server() {
+        initializeComponents();
+    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
 
-        Spark.delete("/db", clearHandler::clear);
+        Spark.delete("/db", (req, resp) -> clearHandler.clear(resp));
         Spark.post("/user", userHandler::register);
         Spark.post("/session", userHandler::login);
         Spark.delete("/session", userHandler::logout);

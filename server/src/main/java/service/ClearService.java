@@ -4,9 +4,6 @@ import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 
-import spark.Request;
-import spark.Response;
-
 public class ClearService {
     private final UserDAO userDAO;
     private final AuthDAO authDAO;
