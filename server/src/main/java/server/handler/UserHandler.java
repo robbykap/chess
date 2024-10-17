@@ -5,16 +5,18 @@ import com.google.gson.Gson;
 import model.AuthData;
 import model.UserData;
 
-import dataaccess.*;
-
-import server.request.user.*;
-import server.response.user.*;
-import server.response.exception.*;
+import dataaccess.AlreadyTakenException;
+import dataaccess.BadRequestException;
+import dataaccess.UnauthorizedException;
 
 import service.UserService;
 
 import spark.Request;
 import spark.Response;
+
+import server.request.user.*;
+import server.response.user.*;
+import server.response.exception.*;
 
 public class UserHandler {
     private final UserService userService;

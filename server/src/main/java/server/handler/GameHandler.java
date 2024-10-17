@@ -1,20 +1,22 @@
 package server.handler;
 
-import java.util.Map;
-import java.util.Collection;
-
 import com.google.gson.Gson;
 
-import dataaccess.*;
-
-import server.request.game.*;
-import server.response.game.*;
-import server.response.exception.*;
+import dataaccess.AlreadyTakenException;
+import dataaccess.BadRequestException;
+import dataaccess.UnauthorizedException;
 
 import service.GameService;
 
 import spark.Request;
 import spark.Response;
+
+import server.request.game.*;
+import server.response.game.*;
+import server.response.exception.*;
+
+import java.util.Map;
+import java.util.Collection;
 
 public class GameHandler {
     private final GameService gameService;
