@@ -1,5 +1,6 @@
 package server;
 
+import server.Handler.*;
 import spark.*;
 
 import service.*;

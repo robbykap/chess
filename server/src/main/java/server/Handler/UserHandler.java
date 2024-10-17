@@ -1,6 +1,4 @@
-package server;
-
-import com.google.gson.Gson;
+package server.Handler;
 
 import model.AuthData;
 import model.UserData;
@@ -14,6 +12,8 @@ import spark.Response;
 
 import server.Request.*;
 import server.Response.*;
+
+import com.google.gson.Gson;
 
 public class UserHandler {
     private UserService userService;

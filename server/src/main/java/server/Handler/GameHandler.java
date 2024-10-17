@@ -1,18 +1,19 @@
-package server;
+package server.Handler;
 
-import com.google.gson.Gson;
 import dataaccess.*;
-
-import model.GameData;
-
-import server.Request.*;
-import spark.Request;
-import spark.Response;
 
 import service.GameService;
 
-import java.util.Collection;
+
+import spark.Request;
+import spark.Response;
+
+import server.Request.*;
+import server.Response.*;
+
 import java.util.Map;
+import java.util.Collection;
+import com.google.gson.Gson;
 
 public class GameHandler {
     private GameService gameService;
@@ -26,11 +27,10 @@ public class GameHandler {
 
         try{
             Collection<Map<String, Object>> games = gameService.listGames(listGameRequest.authToken());
-            resp.status(200);
-            return "{ \"games\": " + new Gson().toJson(games) + " }";
+            return ListGamesResult.response(resp, games);
+
         } catch (UnauthorizedException e) {
-            resp.status(401);
-            return "{ \"message\": \"Error: unauthorized\" }";
+            return Unauthorized.response(resp);
         }
     };
 
@@ -40,16 +40,13 @@ public class GameHandler {
 
         try {
             int gameID = gameService.createGame(createGameRequest.authToken(), createGameRequest.gameName());
-            resp.status(200);
-            return "{\"gameID\": " + gameID + "}";
+            return CreateGameResult.response(resp, gameID);
 
         } catch (UnauthorizedException e) {
-            resp.status(401);
-            return "{ \"message\": \"Error: unauthorized\" }";
+            return Unauthorized.response(resp);
 
         } catch (BadRequestException e) {
-            resp.status(400);
-            return "{ \"message\": \"Error: bad request\" }";
+            return BadRequest.response(resp);
         }
 
     };
@@ -59,26 +56,21 @@ public class GameHandler {
         joinGameData = new JoinGameRequest(req.headers("Authorization"), joinGameData.playerColor(), joinGameData.gameID());
 
         if (joinGameData.playerColor() == null) {
-            resp.status(400);
-            return "{ \"message\": \"Error: bad request\" }";
+            return BadRequest.response(resp);
         }
 
         try {
             gameService.joinGame(joinGameData.authToken(), joinGameData.playerColor(), joinGameData.gameID());
-            resp.status(200);
-            return "{}";
+            return JoinGameResult.response(resp);
 
         } catch (AlreadyTakenException e) {
-            resp.status(403);
-            return "{ \"message\": \"Error: already taken\" }";
+            return AlreadyTaken.response(resp);
 
         } catch (UnauthorizedException e) {
-            resp.status(401);
-            return "{ \"message\": \"Error: unauthorized\" }";
+            return Unauthorized.response(resp);
 
         } catch (BadRequestException e) {
-            resp.status(400);
-            return "{ \"message\": \"Error: bad request\" }";
+            return BadRequest.response(resp);
         }
     };
 }
