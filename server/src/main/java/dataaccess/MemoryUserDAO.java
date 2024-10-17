@@ -1,7 +1,6 @@
 package dataaccess;
 
 import model.UserData;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryUserDAO implements UserDAO {
@@ -13,7 +12,7 @@ public class MemoryUserDAO implements UserDAO {
         UserData userData = users.get(username);
 
         if (userData == null) {
-            throw new DataAccessException("User not found: " + username);
+            throw new DataAccessException("User not found");
         }
 
         return userData;
@@ -21,15 +20,17 @@ public class MemoryUserDAO implements UserDAO {
 
     @Override
     public void createUser(UserData user) throws DataAccessException {
+        // Check if user already exists, if so throw exception
         try {
             getUser(user.username());
 
         } catch (DataAccessException e) {
+            // User does not exist, add user
             users.put(user.username(), user);
             return;
         }
 
-        throw new DataAccessException("User already exists: " + user.username());
+        throw new DataAccessException("User already exists");
     }
 
     @Override

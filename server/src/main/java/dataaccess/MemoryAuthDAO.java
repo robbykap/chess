@@ -1,7 +1,6 @@
 package dataaccess;
 
 import model.AuthData;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryAuthDAO implements AuthDAO {
@@ -17,7 +16,7 @@ public class MemoryAuthDAO implements AuthDAO {
         String username = auths.get(authToken);
 
         if (username == null) {
-            throw new DataAccessException("No such auth token");
+            throw new DataAccessException("Invalid authToken");
         }
 
         return new AuthData(username, authToken);
