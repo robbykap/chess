@@ -1,6 +1,11 @@
 package service;
 
-import dataaccess.*;
+import dataaccess.BadRequestException;
+import dataaccess.DataAccessException;
+import dataaccess.UnauthorizedException;
+import dataaccess.UserDAO;
+import dataaccess.AuthDAO;
+
 
 import model.AuthData;
 import model.UserData;
@@ -31,10 +36,7 @@ public class UserService {
         return authData;
     };
 
-    public AuthData login(UserData userData) throws UnauthorizedException {
-        String username = userData.username();
-        String password = userData.password();
-
+    public AuthData login(String username, String password) throws UnauthorizedException {
         try {
             UserData user = userDAO.getUser(username);
 
@@ -58,7 +60,7 @@ public class UserService {
 
     public void logout(String authToken) throws UnauthorizedException {
         try {
-            authDAO.verifyAuth(authToken);
+            authDAO.getAuth(authToken);
         } catch (DataAccessException e) {
             throw new UnauthorizedException(e.getMessage());
         }
@@ -66,8 +68,4 @@ public class UserService {
         authDAO.deleteAuth(authToken);
     };
 
-    public void clear() {
-        userDAO.clearUsers();
-        authDAO.clearAuths();
-    }
 }

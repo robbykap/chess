@@ -3,10 +3,12 @@ package dataaccess;
 import model.GameData;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public interface GameDAO {
 
-    Collection<GameData> getGames();
+    Collection<Map<String, Object>> getGames();
 
     void createGame(GameData game) throws DataAccessException;
 
@@ -14,5 +16,5 @@ public interface GameDAO {
 
     void updateGame(GameData game) throws DataAccessException;
 
-    void clearGames();
+    void clear();
 }

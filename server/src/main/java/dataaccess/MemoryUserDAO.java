@@ -5,17 +5,18 @@ import model.UserData;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryUserDAO implements UserDAO {
-    private int size = 0;
     final private ConcurrentHashMap<String, UserData> users = new ConcurrentHashMap<>();
 
 
     @Override
     public UserData getUser(String username) throws DataAccessException {
-        try {
-            return users.get(username);
-        } catch (Exception e) {
+        UserData userData = users.get(username);
+
+        if (userData == null) {
             throw new DataAccessException("User not found: " + username);
         }
+
+        return userData;
     }
 
     @Override
@@ -24,19 +25,17 @@ public class MemoryUserDAO implements UserDAO {
             getUser(user.username());
         } catch (DataAccessException e) {
             users.put(user.username(), user);
-            size++;
             return;
         }
         throw new DataAccessException("User already exists: " + user.username());
     }
 
     @Override
-    public void clearUsers() {
+    public void clear() {
         users.clear();
-        size = 0;
     }
 
     public int size() {
-        return size;
+        return users.size();
     }
 }

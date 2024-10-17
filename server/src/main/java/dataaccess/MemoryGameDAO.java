@@ -3,10 +3,12 @@ package dataaccess;
 import model.GameData;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class MemoryGameDAO implements GameDAO {
-    private int size = 0;
     final private ConcurrentHashMap<Integer, GameData> games = new ConcurrentHashMap<>();
 
     @Override
@@ -15,21 +17,30 @@ public class MemoryGameDAO implements GameDAO {
             throw new DataAccessException("Game already exists, gameID: " + game.gameID());
         }
         games.put(game.gameID(), game);
-        size++;
     }
 
+
     @Override
-    public Collection<GameData> getGames() {
-        return games.values();
+    public Collection<Map<String, Object>> getGames() {
+        return games.values().stream().map(game -> {
+            Map<String, Object> gameMap = new HashMap<>();
+            gameMap.put("gameID", game.gameID());
+            gameMap.put("whiteUsername", game.whiteUsername());
+            gameMap.put("blackUsername", game.blackUsername());
+            gameMap.put("gameName", game.gameName());
+            return gameMap;
+        }).collect(Collectors.toList());
     }
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
-        try {
-            return games.get(gameID);
-        } catch (Exception e) {
+        GameData gameData = games.get(gameID);
+
+        if (gameData == null) {
             throw new DataAccessException("Game not found, gameID: " + gameID);
         }
+
+        return gameData;
     }
 
     @Override
@@ -43,8 +54,11 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public void clearGames() {
+    public void clear() {
         games.clear();
-        size = 0;
+    }
+
+    public int size() {
+        return games.size();
     }
 }

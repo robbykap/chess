@@ -15,6 +15,7 @@ public class Server {
 
     private UserHandler userHandler = new UserHandler(userService);
     private GameHandler gameHandler = new GameHandler(gameService);
+    private ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
 
     public Server() {};
 
@@ -23,7 +24,7 @@ public class Server {
 
         Spark.staticFiles.location("web");
 
-        Spark.delete("/db", this::clear);
+        Spark.delete("/db", clearService::clear);
         Spark.post("/user", userHandler::register);
         Spark.post("/session", userHandler::login);
         Spark.delete("/session", userHandler::logout);
@@ -44,9 +45,9 @@ public class Server {
     }
 
     public Object clear(Request req, Response resp) {
-        authDAO.clearAuths();
-        gameDAO.clearGames();
-        userDAO.clearUsers();
+        authDAO.clear();
+        gameDAO.clear();
+        userDAO.clear();
         return "{}";
     }
 }
