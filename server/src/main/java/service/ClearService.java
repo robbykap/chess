@@ -18,13 +18,10 @@ public class ClearService {
         this.gameDAO = gameDAO;
     }
 
-    public Object clear(Request request, Response resp) {
+    public void clear() {
         userDAO.clear();
         authDAO.clear();
         gameDAO.clear();
-
-        resp.status(200);
-        return "{}";
     }
 
 }
