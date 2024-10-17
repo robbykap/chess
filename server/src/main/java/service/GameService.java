@@ -2,6 +2,9 @@ package service;
 
 import chess.ChessGame;
 
+import model.AuthData;
+import model.GameData;
+
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import dataaccess.DataAccessException;
@@ -9,17 +12,14 @@ import dataaccess.BadRequestException;
 import dataaccess.UnauthorizedException;
 import dataaccess.AlreadyTakenException;
 
-import model.AuthData;
-import model.GameData;
-
 import java.util.Map;
-import java.util.UUID;
 import java.util.Collection;
+import java.util.UUID;
 
 public class GameService {
     private final GameDAO gameDAO;
     private final AuthDAO authDAO;
-    
+
     private int getGameID() {
         int gameID;
         do {

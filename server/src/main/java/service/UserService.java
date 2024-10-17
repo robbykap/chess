@@ -1,14 +1,14 @@
 package service;
 
+import model.AuthData;
+import model.UserData;
+
 import dataaccess.AuthDAO;
 import dataaccess.UserDAO;
 import dataaccess.AlreadyTakenException;
 import dataaccess.BadRequestException;
 import dataaccess.UnauthorizedException;
 import dataaccess.DataAccessException;
-
-import model.AuthData;
-import model.UserData;
 
 import java.util.UUID;
 

@@ -1,10 +1,8 @@
 package server.handler;
 
-import server.response.clear.*;
-
 import service.ClearService;
-
 import spark.Response;
+import server.response.clear.ClearResult;
 
 public class ClearHandler {
     private final ClearService clearService;
