@@ -1,15 +1,18 @@
 package server;
 
 import com.google.gson.Gson;
-import dataaccess.*;
 
 import model.AuthData;
 import model.UserData;
 
+import dataaccess.*;
+
+import service.UserService;
+
 import spark.Request;
 import spark.Response;
 
-import service.UserService;
+import server.Request.*;
 
 public class UserHandler {
     private UserService userService;
@@ -18,13 +21,19 @@ public class UserHandler {
         this.userService = userService;
     }
 
-    public Object register(Request req, Response resp) throws BadRequestException {
-        UserData userData = new Gson().fromJson(req.body(), UserData.class);
+    public Object register(Request req, Response resp) {
+        RegisterRequest registerRequest = new Gson().fromJson(req.body(), RegisterRequest.class);
 
-        if (userData.username() == null || userData.password() == null || userData.email() == null) {
+        if (registerRequest.username() == null ||
+            registerRequest.password() == null ||
+            registerRequest.email() == null) {
             resp.status(400);
             return "{ \"message\": \"Error: bad request\" }";
         }
+
+        UserData userData = new UserData(registerRequest.username(),
+                                         registerRequest.password(),
+                                         registerRequest.email());
 
         try {
             AuthData authData = userService.register(userData);
@@ -38,13 +47,14 @@ public class UserHandler {
 
     };
 
-    public Object login(Request req, Response resp) throws UnauthorizedException {
-        UserData userData = new Gson().fromJson(req.body(), UserData.class);
+    public Object login(Request req, Response resp) {
+        LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
 
         try {
-            AuthData authData = userService.login(userData.username(), userData.password());
+            AuthData authData = userService.login(loginRequest.username(), loginRequest.password());
             resp.status(200);
             return new Gson().toJson(authData);
+
         } catch (UnauthorizedException e) {
             resp.status(401);
             return "{ \"message\": \"Error: unauthorized\" }";
@@ -52,12 +62,14 @@ public class UserHandler {
 
     };
 
-    public Object logout(Request req, Response resp) throws UnauthorizedException {
-        String authToken = req.headers("Authorization");
+    public Object logout(Request req, Response resp) {
+        LogoutRequest logoutRequest = new LogoutRequest(req.headers("Authorization"));
+
         try {
-            userService.logout(authToken);
+            userService.logout(logoutRequest.authToken());
             resp.status(200);
             return "{}";
+
         } catch (UnauthorizedException e) {
             resp.status(401);
             return "{ \"message\": \"Error: unauthorized\" }";
