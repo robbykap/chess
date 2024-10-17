@@ -13,6 +13,7 @@ import spark.Request;
 import spark.Response;
 
 import server.Request.*;
+import server.Response.*;
 
 public class UserHandler {
     private UserService userService;
@@ -24,25 +25,18 @@ public class UserHandler {
     public Object register(Request req, Response resp) {
         RegisterRequest registerRequest = new Gson().fromJson(req.body(), RegisterRequest.class);
 
-        if (registerRequest.username() == null ||
-            registerRequest.password() == null ||
-            registerRequest.email() == null) {
-            resp.status(400);
-            return "{ \"message\": \"Error: bad request\" }";
+        if (registerRequest.username() == null || registerRequest.password() == null || registerRequest.email() == null) {
+            return BadRequest.response(resp);
         }
 
-        UserData userData = new UserData(registerRequest.username(),
-                                         registerRequest.password(),
-                                         registerRequest.email());
+        UserData userData = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
 
         try {
             AuthData authData = userService.register(userData);
-            resp.status(200);
-            return new Gson().toJson(authData);
+            return RegisterResult.response(resp, authData);
 
-        } catch (BadRequestException e) {
-            resp.status(403);
-            return "{ \"message\": \"Error: already taken\" }";
+        } catch (AlreadyTakenException e) {
+            return AlreadyTaken.response(resp);
         }
 
     };
@@ -52,12 +46,10 @@ public class UserHandler {
 
         try {
             AuthData authData = userService.login(loginRequest.username(), loginRequest.password());
-            resp.status(200);
-            return new Gson().toJson(authData);
+           return LoginResult.response(resp, authData);
 
         } catch (UnauthorizedException e) {
-            resp.status(401);
-            return "{ \"message\": \"Error: unauthorized\" }";
+            return Unauthorized.response(resp);
         }
 
     };
@@ -67,12 +59,10 @@ public class UserHandler {
 
         try {
             userService.logout(logoutRequest.authToken());
-            resp.status(200);
-            return "{}";
+            return LogoutResult.response(resp);
 
         } catch (UnauthorizedException e) {
-            resp.status(401);
-            return "{ \"message\": \"Error: unauthorized\" }";
+            return Unauthorized.response(resp);
         }
     };
 

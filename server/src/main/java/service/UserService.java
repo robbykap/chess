@@ -1,10 +1,6 @@
 package service;
 
-import dataaccess.BadRequestException;
-import dataaccess.DataAccessException;
-import dataaccess.UnauthorizedException;
-import dataaccess.UserDAO;
-import dataaccess.AuthDAO;
+import dataaccess.*;
 
 
 import model.AuthData;
@@ -21,11 +17,11 @@ public class UserService {
         this.authDAO = authDAO;
     }
 
-    public AuthData register(UserData userData) throws BadRequestException {
+    public AuthData register(UserData userData) throws AlreadyTakenException {
         try {
             userDAO.createUser(userData);
         } catch (DataAccessException e) {
-            throw new BadRequestException(e.getMessage());
+            throw new AlreadyTakenException(e.getMessage());
         }
 
         String authToken = UUID.randomUUID().toString();
