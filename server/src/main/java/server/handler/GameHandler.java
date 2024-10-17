@@ -23,7 +23,7 @@ public class GameHandler {
         this.gameService = gameService;
     }
 
-    public Object listGames(Request req, Response resp) throws UnauthorizedException, DataAccessException {
+    public Object listGames(Request req, Response resp) throws DataAccessException {
         ListGameRequest listGameRequest = new ListGameRequest(req.headers("Authorization"));
 
         try{
@@ -43,35 +43,31 @@ public class GameHandler {
             int gameID = gameService.createGame(createGameRequest.authToken(), createGameRequest.gameName());
             return CreateGameResult.response(resp, gameID);
 
-        } catch (UnauthorizedException e) {
-            return Unauthorized.response(resp);
-
         } catch (BadRequestException e) {
             return BadRequest.response(resp);
+
+        } catch (UnauthorizedException e) {
+            return Unauthorized.response(resp);
         }
 
     };
 
-    public Object joinGame(Request req, Response resp) throws UnauthorizedException, BadRequestException {
+    public Object joinGame(Request req, Response resp) {
         JoinGameRequest joinGameData = new Gson().fromJson(req.body(), JoinGameRequest.class);
         joinGameData = new JoinGameRequest(req.headers("Authorization"), joinGameData.playerColor(), joinGameData.gameID());
-
-        if (joinGameData.playerColor() == null) {
-            return BadRequest.response(resp);
-        }
 
         try {
             gameService.joinGame(joinGameData.authToken(), joinGameData.playerColor(), joinGameData.gameID());
             return JoinGameResult.response(resp);
 
-        } catch (AlreadyTakenException e) {
-            return AlreadyTaken.response(resp);
+        } catch (BadRequestException e) {
+            return BadRequest.response(resp);
 
         } catch (UnauthorizedException e) {
             return Unauthorized.response(resp);
 
-        } catch (BadRequestException e) {
-            return BadRequest.response(resp);
+        } catch (AlreadyTakenException e) {
+            return AlreadyTaken.response(resp);
         }
     };
 }

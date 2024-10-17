@@ -64,6 +64,10 @@ public class GameService {
     };
 
     public void joinGame(String authToken, String color, int gameID) throws BadRequestException, UnauthorizedException, AlreadyTakenException {
+        if (color == null) {
+            throw new BadRequestException("Invalid color");
+        }
+
         AuthData authData;
         try {
             authData = authDAO.getAuth(authToken);

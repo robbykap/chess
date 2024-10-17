@@ -25,16 +25,14 @@ public class UserHandler {
 
     public Object register(Request req, Response resp) {
         RegisterRequest registerRequest = new Gson().fromJson(req.body(), RegisterRequest.class);
-
-        if (registerRequest.username() == null || registerRequest.password() == null || registerRequest.email() == null) {
-            return BadRequest.response(resp);
-        }
-
         UserData userData = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
 
         try {
             AuthData authData = userService.register(userData);
             return RegisterResult.response(resp, authData);
+
+        } catch (BadRequestException e) {
+            return BadRequest.response(resp);
 
         } catch (AlreadyTakenException e) {
             return AlreadyTaken.response(resp);
@@ -49,7 +47,7 @@ public class UserHandler {
             AuthData authData = userService.login(loginRequest.username(), loginRequest.password());
            return LoginResult.response(resp, authData);
 
-        } catch (UnauthorizedException e) {
+        } catch (UnauthorizedException | BadRequestException e) {
             return Unauthorized.response(resp);
         }
 
