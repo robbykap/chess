@@ -2,14 +2,14 @@ package dataaccess;
 
 import model.GameData;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.stream.Collectors;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryGameDAO implements GameDAO {
-    final private ConcurrentHashMap<Integer, GameData> games = new ConcurrentHashMap<>();
+    final private Map<Integer, GameData> games = new LinkedHashMap<>();
 
     @Override
     public void createGame(GameData game) throws DataAccessException {
