@@ -153,20 +153,7 @@ public class ChessGame {
             return false;
         }
 
-        List<ChessPiece> teamPieces = board.getTeamPieces(teamColor);
-
-        for (ChessPiece piece : teamPieces) {
-            Collection<ChessMove> moves = piece.pieceMoves(board, piece.getPosition(board));
-            for (ChessMove move : moves) {
-                ChessPiece capturedPiece = simulateMove(piece, move);
-                if (!isInCheck(teamColor)) {
-                    undoMove(piece, move, capturedPiece);
-                    return false;
-                }
-                undoMove(piece, move, capturedPiece);
-            }
-        }
-        return true;
+        return checkmateSimulator(teamColor);
     }
 
 
@@ -184,6 +171,10 @@ public class ChessGame {
             return false;
         }
 
+        return checkmateSimulator(teamColor);
+    }
+
+    private boolean checkmateSimulator(TeamColor teamColor) {
         List<ChessPiece> teamPieces = board.getTeamPieces(teamColor);
 
         for (ChessPiece piece : teamPieces) {
@@ -226,8 +217,12 @@ public class ChessGame {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        };
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        };
         ChessGame chessGame = (ChessGame) o;
         return teamTurn == chessGame.teamTurn && Objects.equals(board, chessGame.board);
     }

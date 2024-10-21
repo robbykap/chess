@@ -108,7 +108,10 @@ public class FindMoves {
                                 Dictionary<String, Integer> info,
                                 ChessPosition pos, Collection<ChessMove> moves) {
         if (pos.getRow() == info.get("promotion")) {
-            for (var type : new ChessPiece.PieceType[]{ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.ROOK, ChessPiece.PieceType.QUEEN}) {
+            for (var type : new ChessPiece.PieceType[]{ChessPiece.PieceType.KNIGHT,
+                                                       ChessPiece.PieceType.BISHOP,
+                                                       ChessPiece.PieceType.ROOK,
+                                                       ChessPiece.PieceType.QUEEN}) {
                 moves.add(new ChessMove(myPosition, pos, type));
             }
         } else {
