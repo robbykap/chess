@@ -1,6 +1,8 @@
 package dataaccess;
 
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryUserDAO implements UserDAO {
@@ -26,7 +28,8 @@ public class MemoryUserDAO implements UserDAO {
 
         } catch (DataAccessException e) {
             // User does not exist, add user
-            users.put(user.username(), user);
+            UserData hashedPasswordUser = new UserData(user.username(), BCrypt.hashpw(user.password(), BCrypt.gensalt()), user.email());
+            users.put(user.username(), hashedPasswordUser);
             return;
         }
 
