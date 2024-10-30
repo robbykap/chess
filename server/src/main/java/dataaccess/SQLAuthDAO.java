@@ -8,7 +8,7 @@ public class SQLAuthDAO implements AuthDAO{
 
     public SQLAuthDAO() {
         try {
-            configureDatabase();
+            DatabaseManager.configureDatabase("AuthData");
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
@@ -72,28 +72,6 @@ public class SQLAuthDAO implements AuthDAO{
                 statement.executeUpdate();
             }
         } catch (SQLException | DataAccessException ignored) {
-        }
-    }
-
-    private final String[] createStatements = {
-        """
-        CREATE TABLE IF NOT EXISTS AuthData (
-                        username VARCHAR(255) NOT NULL,
-                        authToken VARCHAR(255) NOT NULL,
-                        PRIMARY KEY (authToken)
-        )"""
-    };
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var connection = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = connection.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error when configuring database");
         }
     }
 

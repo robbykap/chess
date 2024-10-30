@@ -10,7 +10,7 @@ public class SQLUserDAO implements UserDAO {
 
     public SQLUserDAO() {
         try {
-            configureDatabase();
+            DatabaseManager.configureDatabase("UserData");
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
@@ -58,29 +58,6 @@ public class SQLUserDAO implements UserDAO {
             var statement = connection.prepareStatement("DELETE FROM UserData");
             statement.executeUpdate();
         } catch (SQLException | DataAccessException ignored) {
-        }
-    }
-
-    private final String[] createStatements = {
-        """
-        CREATE TABLE IF NOT EXISTS UserData (
-                        username VARCHAR(255) NOT NULL,
-                        password VARCHAR(255) NOT NULL,
-                        email VARCHAR(255) NOT NULL,
-                        PRIMARY KEY (username)
-        )"""
-    };
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var connection = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = connection.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error when configuring database");
         }
     }
 

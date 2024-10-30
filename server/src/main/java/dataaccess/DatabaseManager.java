@@ -1,6 +1,7 @@
 package dataaccess;
 
 import java.sql.*;
+import java.util.Map;
 import java.util.Properties;
 
 public class DatabaseManager {
@@ -67,6 +68,54 @@ public class DatabaseManager {
             return conn;
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    static Map<String, String[]> BDTables() {
+        return Map.of(
+            "AuthData", new String[]{
+                """
+                CREATE TABLE IF NOT EXISTS AuthData (
+                                username VARCHAR(255) NOT NULL,
+                                authToken VARCHAR(255) NOT NULL,
+                                PRIMARY KEY (authToken)
+                )"""
+            },
+            "GameData", new String[]{
+                """
+                CREATE TABLE IF NOT EXISTS GameData (
+                                gameID INT NOT NULL,
+                                whiteUsername VARCHAR(255),
+                                blackUsername VARCHAR(255),
+                                gameName VARCHAR(255),
+                                game TEXT,
+                                PRIMARY KEY (gameID)
+                )"""
+            },
+            "UserData", new String[]{
+                """
+                CREATE TABLE IF NOT EXISTS UserData (
+                                username VARCHAR(255) NOT NULL,
+                                password VARCHAR(255) NOT NULL,
+                                email VARCHAR(255) NOT NULL,
+                                PRIMARY KEY (username)
+                )"""
+            }
+        );
+    }
+
+    public static void configureDatabase(String table) throws DataAccessException {
+        String[] createStatements = BDTables().get(table);
+
+        createDatabase();
+        try (var connection = getConnection()) {
+            for (var statement : createStatements) {
+                try (var preparedStatement = connection.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error when configuring database");
         }
     }
 }
