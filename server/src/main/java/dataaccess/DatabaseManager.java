@@ -71,7 +71,7 @@ public class DatabaseManager {
         }
     }
 
-    static Map<String, String[]> Tables() {
+    static Map<String, String[]> sqlTables() {
         return Map.of(
             "AuthData", new String[]{
                 """
@@ -105,7 +105,7 @@ public class DatabaseManager {
     }
 
     public static void configureDatabase(String table) throws DataAccessException {
-        String[] createStatements = Tables().get(table);
+        String[] createStatements = sqlTables().get(table);
 
         createDatabase();
         try (var connection = getConnection()) {
