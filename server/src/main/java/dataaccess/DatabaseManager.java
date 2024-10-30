@@ -71,7 +71,7 @@ public class DatabaseManager {
         }
     }
 
-    static Map<String, String[]> BDTables() {
+    static Map<String, String[]> Tables() {
         return Map.of(
             "AuthData", new String[]{
                 """
@@ -105,7 +105,7 @@ public class DatabaseManager {
     }
 
     public static void configureDatabase(String table) throws DataAccessException {
-        String[] createStatements = BDTables().get(table);
+        String[] createStatements = Tables().get(table);
 
         createDatabase();
         try (var connection = getConnection()) {
@@ -116,6 +116,19 @@ public class DatabaseManager {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error when configuring database");
+        }
+    }
+
+    public static int size(String table) throws DataAccessException {
+        try (var connection = getConnection()) {
+            try (var statement = connection.prepareStatement("SELECT COUNT(*) FROM " + table)) {
+                try (var resultSet = statement.executeQuery()) {
+                    resultSet.next();
+                    return resultSet.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error when getting size");
         }
     }
 }

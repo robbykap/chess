@@ -115,16 +115,11 @@ public class SQLGameDAO implements GameDAO {
         }
     }
 
-    public int size() {
-        try (var connection = DatabaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT COUNT(*) FROM GameData")) {
-                try (var resultSet = statement.executeQuery()) {
-                    resultSet.next();
-                    return resultSet.getInt(1);
-                }
-            }
-        } catch (SQLException | DataAccessException e) {
-            return 0;
+   public int size() {
+        try {
+            return DatabaseManager.size("GameData");
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 }

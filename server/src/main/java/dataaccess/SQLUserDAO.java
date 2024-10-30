@@ -61,16 +61,11 @@ public class SQLUserDAO implements UserDAO {
         }
     }
 
-    public int size() {
-        try (var connection = DatabaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT COUNT(*) FROM UserData")) {
-                try (var resultSet = statement.executeQuery()) {
-                    resultSet.next();
-                    return resultSet.getInt(1);
-                }
-            }
-        } catch (SQLException | DataAccessException e) {
-            return 0;
+   public int size() {
+        try {
+            return DatabaseManager.size("UserData");
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 }
