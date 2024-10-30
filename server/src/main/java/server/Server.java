@@ -14,7 +14,7 @@ public class Server {
     private void initializeComponents() {
         AuthDAO authDAO = new MemoryAuthDAO();
         GameDAO gameDAO = new MemoryGameDAO();
-        UserDAO userDAO = new MemoryUserDAO();
+        UserDAO userDAO = new SQLUserDAO();
 
         GameService gameService = new GameService(gameDAO, authDAO);
         UserService userService = new UserService(userDAO, authDAO);
