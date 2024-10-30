@@ -12,7 +12,7 @@ public class Server {
     private ClearHandler clearHandler;
 
     private void initializeComponents() {
-        AuthDAO authDAO = new MemoryAuthDAO();
+        AuthDAO authDAO = new SQLAuthDAO();
         GameDAO gameDAO = new SQLGameDAO();
         UserDAO userDAO = new SQLUserDAO();
 
