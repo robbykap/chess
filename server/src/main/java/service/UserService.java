@@ -9,7 +9,6 @@ import dataaccess.AlreadyTakenException;
 import dataaccess.BadRequestException;
 import dataaccess.UnauthorizedException;
 import dataaccess.DataAccessException;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.UUID;
 
@@ -50,7 +49,7 @@ public class UserService {
             UserData user = userDAO.getUser(username);
 
             // Check if the password is incorrect, throw an UnauthorizedException if it is not
-            if (BCrypt.checkpw(password, user.password())) {
+            if (user.password().equals(password)) {
 
                 // Create an AuthData and insert it into the AuthDAO
                 String authToken = UUID.randomUUID().toString();
