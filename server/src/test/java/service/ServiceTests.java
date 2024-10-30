@@ -299,5 +299,21 @@ public class ServiceTests {
         assertEquals(0, authDAO.size(), "clearAuths should clear all auths");
         assertEquals(0, gameDAO.size(), "clearGames should clear all games");
     }
+
+    @Test
+    public void testClearNegative() throws BadRequestException, UnauthorizedException, AlreadyTakenException {
+        // Registers a user, creates a game, and then tries to clear the database with an invalid token
+        UserData userData = new UserData("mike", "password", "bob@example.com");
+
+        AuthData authData = userService.register(userData);
+
+        gameService.createGame(authData.authToken(), "game1");
+
+        assertEquals(1, userDAO.size(), "clear should start with users");
+
+        userService.logout(authData.authToken());
+
+        clearService.clear();
+    }
 }
 
