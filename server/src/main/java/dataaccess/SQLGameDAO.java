@@ -57,7 +57,7 @@ public class SQLGameDAO implements GameDAO {
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage());
+            throw new DataAccessException("Failed to create game");
         }
     }
 

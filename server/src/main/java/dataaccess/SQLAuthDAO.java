@@ -25,7 +25,7 @@ public class SQLAuthDAO implements AuthDAO{
                 statement.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
-            throw new DataAccessException(e.getMessage());
+            throw new DataAccessException("Auth data already exists");
         }
 
     }

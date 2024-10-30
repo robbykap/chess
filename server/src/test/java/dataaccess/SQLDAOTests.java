@@ -125,7 +125,7 @@ public class SQLDAOTests {
                             "gameName",
                             new ChessGame()));
         } catch (DataAccessException e) {
-            assertEquals("Duplicate entry '1' for key 'gamedata.PRIMARY'", e.getMessage());
+            assertEquals("Failed to create game", e.getMessage());
         }
     }
 
@@ -246,7 +246,7 @@ public class SQLDAOTests {
         try {
             authDao.createAuth(new AuthData("username", "authToken"));
         } catch (DataAccessException e) {
-            assertEquals("Duplicate entry 'authToken' for key 'Authdata.PRIMARY'", e.getMessage());
+            assertEquals("Auth data already exists", e.getMessage());
         }
     }
 
