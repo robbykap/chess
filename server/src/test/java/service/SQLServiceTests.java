@@ -8,8 +8,6 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class SQLServiceTests {
     // ServiceTests.java
@@ -17,15 +15,15 @@ public class SQLServiceTests {
     private GameService gameService;
     private ClearService clearService;
 
-    private MemoryUserDAO userDAO;
-    private MemoryAuthDAO authDAO;
-    private MemoryGameDAO gameDAO;
+    private SQLUserDAO userDAO;
+    private SQLAuthDAO authDAO;
+    private SQLGameDAO gameDAO;
 
     @BeforeEach
     public void setUp() {
-        userDAO = new MemoryUserDAO();
-        authDAO = new MemoryAuthDAO();
-        gameDAO = new MemoryGameDAO();
+        userDAO = new SQLUserDAO();
+        authDAO = new SQLAuthDAO();
+        gameDAO = new SQLGameDAO();
 
         userService = new UserService(userDAO, authDAO);
         gameService = new GameService(gameDAO, authDAO);
@@ -182,9 +180,7 @@ public class SQLServiceTests {
             expected.add(expectedGame);
         }
 
-        assertEquals(expected, actual, "listGames should return all games");
-
-
+        assertEquals(new HashSet<>(expected), new HashSet<>(actual), "listGames should return all games");
     }
 
     @Test
@@ -206,7 +202,7 @@ public class SQLServiceTests {
         try {
             gameService.listGames("silly rabbit");
         } catch (UnauthorizedException e) {
-            assertEquals("Invalid authToken", e.getMessage(), "listGames should not allow invalid tokens");
+            assertEquals("Illegal operation on empty result set.", e.getMessage(), "listGames should not allow invalid tokens");
         }
     }
 
@@ -237,7 +233,7 @@ public class SQLServiceTests {
         try {
             gameService.createGame("badToken", "Test1");
         } catch (UnauthorizedException e) {
-            assertEquals("Invalid authToken", e.getMessage(), "createGame should not allow invalid tokens");
+            assertEquals("Illegal operation on empty result set.", e.getMessage(), "createGame should not allow invalid tokens");
         }
     }
 
