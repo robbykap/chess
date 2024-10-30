@@ -13,7 +13,7 @@ public class Server {
 
     private void initializeComponents() {
         AuthDAO authDAO = new MemoryAuthDAO();
-        GameDAO gameDAO = new MemoryGameDAO();
+        GameDAO gameDAO = new SQLGameDAO();
         UserDAO userDAO = new SQLUserDAO();
 
         GameService gameService = new GameService(gameDAO, authDAO);

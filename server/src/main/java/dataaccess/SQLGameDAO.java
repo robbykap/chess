@@ -1,7 +1,10 @@
 package dataaccess;
+import chess.ChessBoard;
 import chess.ChessGame;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import model.GameData;
 
 import java.sql.*;
@@ -50,7 +53,7 @@ public class SQLGameDAO implements GameDAO {
                 statement.setString(2, game.whiteUsername());
                 statement.setString(3, game.blackUsername());
                 statement.setString(4, game.gameName());
-                statement.setString(5, "game");
+                statement.setString(5, new Gson().toJson(game.game()));
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -64,21 +67,19 @@ public class SQLGameDAO implements GameDAO {
             try (var statement = connection.prepareStatement("SELECT * FROM GameData WHERE gameID = ?")) {
                 statement.setInt(1, gameID);
                 try (var resultSet = statement.executeQuery()) {
-                    if (resultSet.next()) {
-                        return new GameData(
-                                resultSet.getInt("gameID"),
-                                resultSet.getString("whiteUsername"),
-                                resultSet.getString("blackUsername"),
-                                resultSet.getString("gameName"),
-                                new Gson().fromJson(resultSet.getString("game"), ChessGame.class)
-                        );
-                    }
+                    resultSet.next();
+                    return new GameData(
+                            resultSet.getInt("gameID"),
+                            resultSet.getString("whiteUsername"),
+                            resultSet.getString("blackUsername"),
+                            resultSet.getString("gameName"),
+                            new Gson().fromJson(resultSet.getString("game"), ChessGame.class)
+                    );
                 }
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
-        return null;
     }
 
     @Override
