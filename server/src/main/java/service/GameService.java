@@ -45,7 +45,7 @@ public class GameService {
             return gameDAO.getGames();
 
         } catch (DataAccessException e) {
-            throw new UnauthorizedException("Invalid authToken");
+            throw new UnauthorizedException(e.getMessage());
         }
     };
 
@@ -68,13 +68,13 @@ public class GameService {
                 gameDAO.createGame(gameData);
 
             } catch (DataAccessException e) {
-                throw new BadRequestException("Game already exists");
+                throw new BadRequestException(e.getMessage());
             }
 
             return gameID;
 
         } catch (DataAccessException e) {
-            throw new UnauthorizedException("Invalid authToken");
+            throw new UnauthorizedException(e.getMessage());
         }
     }
 
@@ -110,11 +110,11 @@ public class GameService {
                 }
 
             } catch (DataAccessException e) {
-                throw new BadRequestException("Game not found");
+                throw new BadRequestException(e.getMessage());
             }
 
         } catch (DataAccessException e) {
-            throw new UnauthorizedException("Invalid authToken");
+            throw new UnauthorizedException(e.getMessage());
         }
 
     }

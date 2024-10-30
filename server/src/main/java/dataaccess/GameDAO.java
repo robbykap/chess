@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface GameDAO {
 
-    Collection<Map<String, Object>> getGames();
+    Collection<Map<String, Object>> getGames() throws DataAccessException;
 
     void createGame(GameData game) throws DataAccessException;
 

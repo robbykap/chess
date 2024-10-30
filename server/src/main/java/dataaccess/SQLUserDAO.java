@@ -19,20 +19,20 @@ public class SQLUserDAO implements UserDAO {
     @Override
     public UserData getUser(String username) throws DataAccessException {
         try (var connection = DatabaseManager.getConnection()) {
-            var statement = connection.prepareStatement("SELECT * FROM UserData WHERE username = ?");
-            statement.setString(1, username);
-            var resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                return new UserData(
-                    resultSet.getString("username"),
-                    resultSet.getString("password"),
-                    resultSet.getString("email")
-                );
+            try (var statement = connection.prepareStatement("SELECT * FROM UserData WHERE username = ?")) {
+                statement.setString(1, username);
+                try (var resultSet = statement.executeQuery()) {
+                    resultSet.next();
+                    return new UserData(
+                            resultSet.getString("username"),
+                            resultSet.getString("password"),
+                            resultSet.getString("email")
+                    );
+                }
             }
         } catch (SQLException e) {
             throw new DataAccessException("User not found");
         }
-        return null;
     }
 
     @Override

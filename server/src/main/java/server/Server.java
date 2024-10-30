@@ -26,7 +26,11 @@ public class Server {
     }
 
     public Server() {
-        initializeComponents();
+        try {
+            initializeComponents();
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public int run(int desiredPort) {
