@@ -19,7 +19,9 @@ public class SQLUserDAO implements UserDAO {
     @Override
     public UserData getUser(String username) throws DataAccessException {
         try (var connection = DatabaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT * FROM UserData WHERE username = ?")) {
+            try (var statement = connection.prepareStatement(
+                    "SELECT * FROM UserData WHERE username = ?"))
+            {
                 statement.setString(1, username);
                 try (var resultSet = statement.executeQuery()) {
                     resultSet.next();
@@ -38,7 +40,8 @@ public class SQLUserDAO implements UserDAO {
     @Override
     public void createUser(UserData user) throws DataAccessException {
         try (var connection = DatabaseManager.getConnection()) {
-            var statement = connection.prepareStatement("INSERT INTO UserData (username, password, email) VALUES (?, ?, ?)");
+            var statement = connection.prepareStatement(
+                    "INSERT INTO UserData (username, password, email) VALUES (?, ?, ?)");
             statement.setString(1, user.username());
             statement.setString(2, BCrypt.hashpw(user.password(), BCrypt.gensalt()));
             statement.setString(3, user.email());
@@ -78,6 +81,19 @@ public class SQLUserDAO implements UserDAO {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error when configuring database");
+        }
+    }
+
+    public int size() {
+        try (var connection = DatabaseManager.getConnection()) {
+            try (var statement = connection.prepareStatement("SELECT COUNT(*) FROM UserData")) {
+                try (var resultSet = statement.executeQuery()) {
+                    resultSet.next();
+                    return resultSet.getInt(1);
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            return 0;
         }
     }
 }

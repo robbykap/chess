@@ -45,7 +45,10 @@ public class SQLGameDAO implements GameDAO {
     @Override
     public void createGame(GameData game) throws DataAccessException {
         try (var connection = DatabaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("INSERT INTO GameData (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?, ?)")) {
+            try (var statement = connection.prepareStatement(
+                    "INSERT INTO GameData (gameID, whiteUsername, blackUsername, gameName, game) " +
+                        "VALUES (?, ?, ?, ?, ?)"))
+            {
                 statement.setInt(1, game.gameID());
                 statement.setString(2, game.whiteUsername());
                 statement.setString(3, game.blackUsername());
@@ -61,7 +64,9 @@ public class SQLGameDAO implements GameDAO {
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
         try (var connection = DatabaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT * FROM GameData WHERE gameID = ?")) {
+            try (var statement = connection.prepareStatement(
+                    "SELECT * FROM GameData WHERE gameID = ?"))
+            {
                 statement.setInt(1, gameID);
                 try (var resultSet = statement.executeQuery()) {
                     resultSet.next();
@@ -82,7 +87,10 @@ public class SQLGameDAO implements GameDAO {
     @Override
     public void updateGame(GameData game) throws DataAccessException {
         try (var connection = DatabaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("UPDATE GameData SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? WHERE gameID = ?")) {
+            try (var statement = connection.prepareStatement(
+                    "UPDATE GameData SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? " +
+                        "WHERE gameID = ?"))
+            {
                 statement.setString(1, game.whiteUsername());
                 statement.setString(2, game.blackUsername());
                 statement.setString(3, game.gameName());
@@ -98,7 +106,9 @@ public class SQLGameDAO implements GameDAO {
     @Override
     public void clear() {
         try (var connection = DatabaseManager.getConnection()) {
-            try (var statement = connection.prepareStatement("DELETE FROM GameData")) {
+            try (var statement = connection.prepareStatement(
+                    "DELETE FROM GameData"))
+            {
                 statement.executeUpdate();
             }
         } catch (SQLException | DataAccessException ignored) {
@@ -127,6 +137,19 @@ public class SQLGameDAO implements GameDAO {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error when configuring database");
+        }
+    }
+
+    public int size() {
+        try (var connection = DatabaseManager.getConnection()) {
+            try (var statement = connection.prepareStatement("SELECT COUNT(*) FROM GameData")) {
+                try (var resultSet = statement.executeQuery()) {
+                    resultSet.next();
+                    return resultSet.getInt(1);
+                }
+            }
+        } catch (SQLException | DataAccessException e) {
+            return 0;
         }
     }
 }
