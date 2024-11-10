@@ -12,6 +12,7 @@ import server.request.user.*;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ChessClient {
@@ -19,6 +20,7 @@ public class ChessClient {
     private final ServerFacade server;
     private final String serverURL;
     private State state = State.SIGNEDOUT;
+    private final Map<Integer, Map<String, Object>> gameDetails = new HashMap<>();
 
     public ChessClient(String serverURL) {
         this.server = new ServerFacade(serverURL);
@@ -84,9 +86,12 @@ public class ChessClient {
         assertSignedIn();
         Collection<Map<String, Object>> games = server.listGames();
         StringBuilder result = new StringBuilder();
+        int counter = 1;
+        gameDetails.clear();
         for (Map<String, Object> game : games) {
-            result.append(String.format("Game ID: %d, Game Name: %s, White Username: %s, Black Username: %s\n",
-                    ((Number) game.get("gameID")).intValue(),
+            gameDetails.put(counter, game);
+            result.append(String.format("ID: %d, Game Name: %s, White Username: %s, Black Username: %s\n",
+                              counter++,
                               game.get("gameName"),
                               game.get("whiteUsername"),
                               game.get("blackUsername")));
@@ -110,11 +115,16 @@ public class ChessClient {
     public String joinGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 2) {
-            String gameID = params[0];
+            int gameID = Integer.parseInt(params[0]);
             String color = params[1].toUpperCase();
-            server.joinGame(Integer.parseInt(gameID), color);
+
+            Map<String, Object> game = gameDetails.get(gameID);
+            gameID = ((Double) game.get("gameID")).intValue();
+            String gameName = (String) game.get("gameName");
+
+            server.joinGame(gameID, color);
             String result = "";
-            result += String.format(WHITE + "Joined game " + BOLD + "%s\n\n", gameID + RESET_BOLD_FAINT);
+            result += String.format(WHITE + "Joined game " + BOLD + "%s\n\n", gameName + RESET_BOLD_FAINT);
             result += DrawBoard.getBlackPerspective();
             result += "\n\n";
             result += DrawBoard.getWhitePerspective();
@@ -126,10 +136,15 @@ public class ChessClient {
     public String observeGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 1) {
-            String gameID = params[0];
-            server.observeGame(Integer.parseInt(gameID));
+             int gameID = Integer.parseInt(params[0]);
+
+            Map<String, Object> game = gameDetails.get(gameID);
+            gameID = ((Double) game.get("gameID")).intValue();
+            String gameName = (String) game.get("gameName");
+
+            server.observeGame(gameID);
             String result = "";
-            result += String.format(WHITE + "Observed game " + BOLD + "%s\n\n", gameID + RESET_BOLD_FAINT);
+            result += String.format(WHITE + "Observed game " + BOLD + "%s\n\n", gameName + RESET_BOLD_FAINT);
             result += DrawBoard.getBlackPerspective();
             result += "\n\n";
             result += DrawBoard.getWhitePerspective();
