@@ -34,7 +34,8 @@ public class ChessClient {
                 case "register" -> register(params);
                 case "logout" -> logout();
                 case "list" -> listGames();
-                case "create" -> create(params);
+                case "create" -> createGame(params);
+                case "join" -> joinGame(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -52,7 +53,7 @@ public class ChessClient {
             server.login(request);
             return String.format(WHITE + "Logged in as " + BOLD + "%s", playerName + RESET_BOLD_FAINT);
         }
-        throw new ResponseException(400, "Expected: login <username> <password>");
+        throw new ResponseException(400, "Expected: login <USERNAME> <PASSWORD>");
     }
 
     public String register(String... params) throws ResponseException {
@@ -65,7 +66,7 @@ public class ChessClient {
             server.register(request);
             return String.format(WHITE + "Registered as " + BOLD + "%s", playerName + RESET_BOLD_FAINT);
         }
-        throw new ResponseException(400, "Expected: register <username> <password> <email>");
+        throw new ResponseException(400, "Expected: register <USERNAME> <PASSWORD> <EMAIL>");
     }
 
     public String logout() throws ResponseException {
@@ -82,8 +83,11 @@ public class ChessClient {
         Collection<Map<String, Object>> games = server.listGames();
         StringBuilder result = new StringBuilder();
         for (Map<String, Object> game : games) {
-            result.append(String.format("Game ID: %s, Game Name: %s, White Username: %s, Black Username: %s\n",
-                    game.get("gameID"), game.get("gameName"), game.get("whiteUsername"), game.get("blackUsername")));
+            result.append(String.format("Game ID: %d, Game Name: %s, White Username: %s, Black Username: %s\n",
+                    ((Number) game.get("gameID")).intValue(),
+                              game.get("gameName"),
+                              game.get("whiteUsername"),
+                              game.get("blackUsername")));
         }
         if (!result.isEmpty() && result.charAt(result.length() - 1) == '\n') {
             result.deleteCharAt(result.length() - 1);
@@ -92,14 +96,26 @@ public class ChessClient {
     }
 
 
-    public String create(String... params) throws ResponseException {
+    public String createGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 1) {
             String gameName = params[0];
             server.createGame(gameName);
             return String.format(WHITE + "Created game " + BOLD + "%s", gameName + RESET_BOLD_FAINT);
         }
-        throw new ResponseException(400, "Expected: create <game name>");
+        throw new ResponseException(400, "Expected: create <NAME>");
+    }
+
+
+    public String joinGame(String... params) throws ResponseException {
+        assertSignedIn();
+        if (params.length == 2) {
+            String gameID = params[0];
+            String color = params[1].toUpperCase();
+            server.joinGame(Integer.parseInt(gameID), color);
+            return String.format(WHITE + "Joined game " + BOLD + "%s", gameID + RESET_BOLD_FAINT);
+        }
+        throw new ResponseException(400, "Expected: join <ID> [WHITE|BLACK]");
     }
 
 

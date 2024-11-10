@@ -14,7 +14,6 @@ import dataaccess.AlreadyTakenException;
 
 import java.util.Map;
 import java.util.Collection;
-import java.util.UUID;
 
 public class GameService {
     private final GameDAO gameDAO;
@@ -23,7 +22,7 @@ public class GameService {
     private int getGameID() {
         int gameID;
         do {
-            gameID = Math.abs(UUID.randomUUID().hashCode());
+            gameID = 1 + (int)(Math.random() * 10000);
             try {
                 gameDAO.getGame(gameID);
             } catch (DataAccessException e) {

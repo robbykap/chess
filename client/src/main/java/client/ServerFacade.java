@@ -1,9 +1,11 @@
 package client;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.ListGameData;
 import server.request.game.CreateGameRequest;
+import server.request.game.JoinGameRequest;
 import server.request.user.*;
 import server.response.game.ListGamesResult;
 
@@ -44,6 +46,11 @@ public class ServerFacade {
     public void createGame(String gameName) throws ResponseException {
         CreateGameRequest request = new CreateGameRequest(authToken, gameName);
         this.makeRequest("POST", "/game", request, null);
+    }
+
+    public void joinGame(int gameID, String color) throws ResponseException {
+        JoinGameRequest request = new JoinGameRequest(authToken, color, gameID);
+        this.makeRequest("PUT", "/game", request, null);
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
