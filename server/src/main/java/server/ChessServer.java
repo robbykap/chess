@@ -6,16 +6,14 @@ import spark.*;
 import service.*;
 import dataaccess.*;
 
-public class Server {
+import java.util.Objects;
+
+public class ChessServer {
     private UserHandler userHandler;
     private GameHandler gameHandler;
     private ClearHandler clearHandler;
 
-    private void initializeComponents() {
-        AuthDAO authDAO = new SQLAuthDAO();
-        GameDAO gameDAO = new SQLGameDAO();
-        UserDAO userDAO = new SQLUserDAO();
-
+    private void _initializeComponents(AuthDAO authDAO, GameDAO gameDAO, UserDAO userDAO) {
         GameService gameService = new GameService(gameDAO, authDAO);
         UserService userService = new UserService(userDAO, authDAO);
         ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
@@ -25,9 +23,26 @@ public class Server {
         clearHandler = new ClearHandler(clearService);
     }
 
-    public Server() {
+    private void initializeComponents(String service) {
+        if (Objects.equals(service, "Memory")) {
+            AuthDAO authDAO = new MemoryAuthDAO();
+            GameDAO gameDAO = new MemoryGameDAO();
+            UserDAO userDAO = new MemoryUserDAO();
+
+            _initializeComponents(authDAO, gameDAO, userDAO);
+
+        } else if (Objects.equals(service, "SQL")) {
+            AuthDAO authDAO = new SQLAuthDAO();
+            GameDAO gameDAO = new SQLGameDAO();
+            UserDAO userDAO = new SQLUserDAO();
+
+            _initializeComponents(authDAO, gameDAO, userDAO);
+        }
+    }
+
+    public ChessServer(String service) {
         try {
-            initializeComponents();
+            initializeComponents(service);
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
@@ -56,5 +71,9 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    public int port() {
+        return Spark.port();
     }
 }

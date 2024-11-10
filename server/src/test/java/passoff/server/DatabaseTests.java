@@ -3,7 +3,7 @@ package passoff.server;
 import chess.ChessGame;
 import org.junit.jupiter.api.*;
 import passoff.model.*;
-import server.Server;
+import server.ChessServer;
 
 import java.lang.reflect.Method;
 import java.sql.*;
@@ -16,14 +16,14 @@ public class DatabaseTests {
 
     private static TestServerFacade serverFacade;
 
-    private static Server server;
+    private static ChessServer server;
 
     private static Class<?> databaseManagerClass;
 
 
     @BeforeAll
     public static void startServer() {
-        server = new Server();
+        server = new ChessServer("SQL");
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
 

@@ -3,7 +3,7 @@ package passoff.server;
 import chess.ChessGame;
 import org.junit.jupiter.api.*;
 import passoff.model.*;
-import server.Server;
+import server.ChessServer;
 
 import java.net.HttpURLConnection;
 import java.util.Arrays;
@@ -21,7 +21,7 @@ public class StandardAPITests {
     private static TestCreateRequest createRequest;
 
     private static TestServerFacade serverFacade;
-    private static Server server;
+    private static ChessServer server;
 
     private String existingAuth;
 
@@ -32,7 +32,7 @@ public class StandardAPITests {
 
     @BeforeAll
     public static void init() {
-        server = new Server();
+        server = new ChessServer("SQL");
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
 
