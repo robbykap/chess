@@ -11,9 +11,9 @@ public class EscapeSequences {
     public static final String ERASE_SCREEN = UNICODE_ESCAPE + "[H" + UNICODE_ESCAPE + "[2J";
     public static final String ERASE_LINE = UNICODE_ESCAPE + "[2K";
 
-    public static final String SET_TEXT_BOLD = UNICODE_ESCAPE + "[1m";
-    public static final String SET_TEXT_FAINT = UNICODE_ESCAPE + "[2m";
-    public static final String RESET_TEXT_BOLD_FAINT = UNICODE_ESCAPE + "[22m";
+    public static final String BOLD = UNICODE_ESCAPE + "[1m";
+    public static final String FAINT = UNICODE_ESCAPE + "[2m";
+    public static final String RESET_BOLD_FAINT = UNICODE_ESCAPE + "[22m";
     public static final String SET_TEXT_ITALIC = UNICODE_ESCAPE + "[3m";
     public static final String RESET_TEXT_ITALIC = UNICODE_ESCAPE + "[23m";
     public static final String SET_TEXT_UNDERLINE = UNICODE_ESCAPE + "[4m";
@@ -27,13 +27,13 @@ public class EscapeSequences {
     public static final String SET_TEXT_COLOR_BLACK = SET_TEXT_COLOR + "0m";
     public static final String SET_TEXT_COLOR_LIGHT_GREY = SET_TEXT_COLOR + "242m";
     public static final String SET_TEXT_COLOR_DARK_GREY = SET_TEXT_COLOR + "235m";
-    public static final String SET_TEXT_COLOR_RED = SET_TEXT_COLOR + "160m";
-    public static final String SET_TEXT_COLOR_GREEN = SET_TEXT_COLOR + "46m";
-    public static final String SET_TEXT_COLOR_YELLOW = SET_TEXT_COLOR + "226m";
-    public static final String SET_TEXT_COLOR_BLUE = SET_TEXT_COLOR + "12m";
-    public static final String SET_TEXT_COLOR_MAGENTA = SET_TEXT_COLOR + "5m";
-    public static final String SET_TEXT_COLOR_WHITE = SET_TEXT_COLOR + "15m";
-    public static final String RESET_TEXT_COLOR = UNICODE_ESCAPE + "[39m";
+    public static final String RED = SET_TEXT_COLOR + "160m";
+    public static final String GREEN = SET_TEXT_COLOR + "46m";
+    public static final String YELLOW = SET_TEXT_COLOR + "226m";
+    public static final String BLUE = SET_TEXT_COLOR + "12m";
+    public static final String MAGENTA = SET_TEXT_COLOR + "5m";
+    public static final String WHITE = SET_TEXT_COLOR + "15m";
+    public static final String RESET = UNICODE_ESCAPE + "[39m";
 
     public static final String SET_BG_COLOR_BLACK = SET_BG_COLOR + "0m";
     public static final String SET_BG_COLOR_LIGHT_GREY = SET_BG_COLOR + "242m";

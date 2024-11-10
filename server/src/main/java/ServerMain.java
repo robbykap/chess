@@ -10,8 +10,8 @@ public class ServerMain {
                 port = Integer.parseInt(args[0]);
             }
 
-            String dataAccess = "Memory";
-            if (args.length >= 2 && args[1].equals("sql")) {
+            String dataAccess = "SQL";
+            if (args.length >= 2 && args[1].equals("SQL")) {
                 dataAccess = "SQL";
             }
 
