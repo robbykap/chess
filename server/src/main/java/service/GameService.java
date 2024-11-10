@@ -85,7 +85,7 @@ public class GameService {
             String username = authData.username();
 
             // Check for valid color, throw BadRequestException if invalid
-            if (color == null || (!color.equals("WHITE") && !color.equals("BLACK"))) {
+            if (color == null || (!color.equals("WHITE") && !color.equals("BLACK") && !color.equals("OBSERVE"))) {
                 throw new BadRequestException("Invalid color");
             }
 
@@ -93,19 +93,23 @@ public class GameService {
             try {
                 GameData game = gameDAO.getGame(gameID);
 
-                if (color.equals("WHITE")) {
-                    // Check if the requested color is already taken, throw AlreadyTakenException if taken
-                    if (game.whiteUsername() != null) {
-                        throw new AlreadyTakenException("White player already joined");
+                switch (color) {
+                    case "WHITE" -> {
+                        // Check if the requested color is already taken, throw AlreadyTakenException if taken
+                        if (game.whiteUsername() != null) {
+                            throw new AlreadyTakenException("White player already joined");
+                        }
+                        gameDAO.updateGame(new GameData(gameID, username, game.blackUsername(), game.gameName(), game.game()));
                     }
-                    gameDAO.updateGame(new GameData(gameID, username, game.blackUsername(), game.gameName(), game.game()));
-
-                } else if (color.equals("BLACK")) {
-                    // Check if the requested color is already taken, throw AlreadyTakenException if taken
-                    if (game.blackUsername() != null) {
-                        throw new AlreadyTakenException("Black player already joined");
+                    case "BLACK" -> {
+                        // Check if the requested color is already taken, throw AlreadyTakenException if taken
+                        if (game.blackUsername() != null) {
+                            throw new AlreadyTakenException("Black player already joined");
+                        }
+                        gameDAO.updateGame(new GameData(gameID, game.whiteUsername(), username, game.gameName(), game.game()));
                     }
-                    gameDAO.updateGame(new GameData(gameID, game.whiteUsername(), username, game.gameName(), game.game()));
+                    case "OBSERVE" ->
+                        gameDAO.updateGame(new GameData(gameID, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game()));
                 }
 
             } catch (DataAccessException e) {

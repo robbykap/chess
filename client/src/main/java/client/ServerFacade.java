@@ -53,6 +53,11 @@ public class ServerFacade {
         this.makeRequest("PUT", "/game", request, null);
     }
 
+    public void observeGame(int gameID) throws ResponseException {
+        JoinGameRequest request = new JoinGameRequest(authToken, "OBSERVE", gameID);
+        this.makeRequest("PUT", "/game", request, null);
+    }
+
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {
             URL url = (new URI(serverURL + path)).toURL();

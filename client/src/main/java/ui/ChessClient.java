@@ -37,6 +37,7 @@ public class ChessClient {
                 case "list" -> listGames();
                 case "create" -> createGame(params);
                 case "join" -> joinGame(params);
+                case "observe" -> observeGame(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -120,6 +121,21 @@ public class ChessClient {
             return result;
         }
         throw new ResponseException(400, "Expected: join <ID> [WHITE|BLACK]");
+    }
+
+    public String observeGame(String... params) throws ResponseException {
+        assertSignedIn();
+        if (params.length == 1) {
+            String gameID = params[0];
+            server.observeGame(Integer.parseInt(gameID));
+            String result = "";
+            result += String.format(WHITE + "Observed game " + BOLD + "%s\n\n", gameID + RESET_BOLD_FAINT);
+            result += DrawBoard.getBlackPerspective();
+            result += "\n\n";
+            result += DrawBoard.getWhitePerspective();
+            return result;
+        }
+        throw new ResponseException(400, "Expected: observe <ID>");
     }
 
     public String help() {
