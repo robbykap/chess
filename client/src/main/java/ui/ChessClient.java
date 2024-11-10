@@ -2,6 +2,7 @@ package ui;
 
 import static ui.EscapeSequences.*;
 
+import client.DrawBoard;
 import client.ServerFacade;
 import client.ResponseException;
 import client.State;
@@ -95,7 +96,6 @@ public class ChessClient {
         return result.toString();
     }
 
-
     public String createGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 1) {
@@ -106,18 +106,21 @@ public class ChessClient {
         throw new ResponseException(400, "Expected: create <NAME>");
     }
 
-
     public String joinGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 2) {
             String gameID = params[0];
             String color = params[1].toUpperCase();
             server.joinGame(Integer.parseInt(gameID), color);
-            return String.format(WHITE + "Joined game " + BOLD + "%s", gameID + RESET_BOLD_FAINT);
+            String result = "";
+            result += String.format(WHITE + "Joined game " + BOLD + "%s\n\n", gameID + RESET_BOLD_FAINT);
+            result += DrawBoard.getBlackPerspective();
+            result += "\n\n";
+            result += DrawBoard.getWhitePerspective();
+            return result;
         }
         throw new ResponseException(400, "Expected: join <ID> [WHITE|BLACK]");
     }
-
 
     public String help() {
         if (state == State.SIGNEDOUT) {
@@ -135,6 +138,8 @@ public class ChessClient {
                    BLUE + BOLD + "list" + RESET_BOLD_FAINT +
                    MAGENTA + " - games\n" +
                    BLUE + BOLD + "join " + RESET_BOLD_FAINT + "<ID> [WHITE|BLACK]" +
+                   MAGENTA + " - a game\n" +
+                   BLUE + BOLD + "observe " + RESET_BOLD_FAINT + "<ID>" +
                    MAGENTA + " - a game\n" +
                    BLUE + BOLD + "logout" + RESET_BOLD_FAINT +
                    MAGENTA + " - when you are done\n" +

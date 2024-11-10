@@ -100,7 +100,7 @@ public class GameService {
                     }
                     gameDAO.updateGame(new GameData(gameID, username, game.blackUsername(), game.gameName(), game.game()));
 
-                } else {
+                } else if (color.equals("BLACK")) {
                     // Check if the requested color is already taken, throw AlreadyTakenException if taken
                     if (game.blackUsername() != null) {
                         throw new AlreadyTakenException("Black player already joined");
