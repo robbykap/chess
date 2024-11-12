@@ -95,5 +95,20 @@ public class ServerFacadeTests {
         }
     }
 
+    @Test
+    public void positiveListGames() throws ResponseException {
+        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        facade.createGame("game1");
+        var games = facade.listGames();
+        assertEquals(1, games.size());
+    }
 
+    @Test
+    public void negativeListGames() {
+        try {
+            facade.listGames();
+        } catch (ResponseException e) {
+            assertEquals("You are not logged in", e.getMessage());
+        }
+    }
 }

@@ -68,8 +68,17 @@ public class ServerFacade {
     }
 
     public Collection<Map<String, Object>> listGames() throws ResponseException {
-        var resp = this.makeRequest("GET", "/game", null, ListGameData.class);
-        return resp.games();
+        try {
+            var resp = this.makeRequest("GET", "/game", null, ListGameData.class);
+            return resp.games();
+        } catch (ResponseException e) {
+            if (e.StatusCode() == 401) {
+                throw new ResponseException(401, "You are not logged in");
+            }
+            else {
+                throw new ResponseException(e.StatusCode(), e.getMessage());
+            }
+        }
     }
 
     public Boolean createGame(String gameName) throws ResponseException {
