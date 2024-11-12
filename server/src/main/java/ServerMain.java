@@ -10,15 +10,10 @@ public class ServerMain {
                 port = Integer.parseInt(args[0]);
             }
 
-            String dataAccess = "SQL";
-            if (args.length >= 2 && args[1].equals("SQL")) {
-                dataAccess = "SQL";
-            }
-
-            var server = new ChessServer(dataAccess);
+            var server = new ChessServer();
             server.run(port);
             port = server.port();
-            System.out.printf("Server started on port %d with %s%n", port, dataAccess);
+            System.out.printf("Server started on port %d with %s%n", port);
             return;
         } catch (Throwable ex) {
             System.out.printf("Unable to start server: %s%n", ex.getMessage());

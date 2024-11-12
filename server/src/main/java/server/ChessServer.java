@@ -42,9 +42,9 @@ public class ChessServer {
         }
     }
 
-    public ChessServer(String service) {
+    public ChessServer() {
         try {
-            initializeComponents(service);
+            initializeComponents("SQL");
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
