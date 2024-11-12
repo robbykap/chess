@@ -60,7 +60,7 @@ public class ServerFacadeTests {
         try {
             facade.logout();
         } catch (ResponseException e) {
-            assertEquals("Not logged in", e.getMessage());
+            assertEquals("You are not logged in", e.getMessage());
         }
     }
 
@@ -80,6 +80,20 @@ public class ServerFacadeTests {
         }
     }
 
-    
+    @Test
+    public void positiveCreateGame() throws ResponseException {
+        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        assertTrue(facade.createGame("game1"));
+    }
+
+    @Test
+    public void negativeCreateGame() {
+        try {
+            facade.createGame("game1");
+        } catch (ResponseException e) {
+            assertEquals("You are not logged in", e.getMessage());
+        }
+    }
+
 
 }

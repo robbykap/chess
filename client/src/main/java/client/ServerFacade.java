@@ -58,7 +58,7 @@ public class ServerFacade {
             this.makeRequest("DELETE", "/session", null, null);
         } catch (ResponseException e) {
             if (e.StatusCode() == 401) {
-                throw new ResponseException(401, "Not logged in");
+                throw new ResponseException(401, "You are not logged in");
             }
             else {
                 throw new ResponseException(e.StatusCode(), e.getMessage());
@@ -73,8 +73,17 @@ public class ServerFacade {
     }
 
     public Boolean createGame(String gameName) throws ResponseException {
-        CreateGameRequest request = new CreateGameRequest(authToken, gameName);
-        this.makeRequest("POST", "/game", request, null);
+        try {
+            CreateGameRequest request = new CreateGameRequest(authToken, gameName);
+            this.makeRequest("POST", "/game", request, null);
+        } catch (ResponseException e) {
+            if (e.StatusCode() == 401) {
+                throw new ResponseException(401, "You are not logged in");
+            }
+            else {
+                throw new ResponseException(e.StatusCode(), e.getMessage());
+            }
+        }
         return true;
     }
 
