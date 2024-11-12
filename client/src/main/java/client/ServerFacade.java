@@ -97,15 +97,42 @@ public class ServerFacade {
     }
 
     public Boolean joinGame(int gameID, String color) throws ResponseException {
-        JoinGameRequest request = new JoinGameRequest(authToken, color, gameID);
-        this.makeRequest("PUT", "/game", request, null);
-        return true;
+        try {
+            JoinGameRequest request = new JoinGameRequest(authToken, color, gameID);
+            this.makeRequest("PUT", "/game", request, null);
+            return true;
+        } catch (ResponseException e) {
+            if (e.StatusCode() == 401) {
+                throw new ResponseException(401, "You are not logged in");
+            }
+            else if (e.StatusCode() == 403) {
+                throw new ResponseException(403, "Color already taken, or game is full");
+            }
+            else if (e.StatusCode() == 400) {
+                throw new ResponseException(400, "Game not found, check id");
+            }
+            else {
+                throw new ResponseException(e.StatusCode(), e.getMessage());
+            }
+        }
     }
 
     public boolean observeGame(int gameID) throws ResponseException {
-        JoinGameRequest request = new JoinGameRequest(authToken, "OBSERVE", gameID);
-        this.makeRequest("PUT", "/game", request, null);
-        return true;
+        try {
+            JoinGameRequest request = new JoinGameRequest(authToken, "OBSERVE", gameID);
+            this.makeRequest("PUT", "/game", request, null);
+            return true;
+        } catch (ResponseException e) {
+            if (e.StatusCode() == 401) {
+                throw new ResponseException(401, "You are not logged in");
+            }
+            else if (e.StatusCode() == 400) {
+                throw new ResponseException(400, "Game not found, check id");
+            }
+            else {
+                throw new ResponseException(e.StatusCode(), e.getMessage());
+            }
+        }
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {

@@ -5,6 +5,10 @@ import server.ChessServer;
 import server.request.user.LoginRequest;
 import server.request.user.RegisterRequest;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -111,4 +115,47 @@ public class ServerFacadeTests {
             assertEquals("You are not logged in", e.getMessage());
         }
     }
+
+    @Test
+    public void positiveJoinGame() throws ResponseException {
+        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        facade.createGame("game1");
+        Collection<Map<String, Object>> games = facade.listGames();
+        for (Map<String, Object> game : games) {
+            if (game.get("gameName").equals("game1")) {
+                int gameID = Double.valueOf(game.get("gameID").toString()).intValue();
+                assertTrue(facade.joinGame(gameID, "WHITE"));
+            }
+        }
+    }
+
+    @Test
+    public void negativeJoinGame() throws ResponseException {
+        try {
+            facade.joinGame(1, "WHITE");
+        } catch (ResponseException e) {
+            assertEquals("You are not logged in", e.getMessage());
+        }
+        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        try {
+            facade.joinGame(1, "WHITE");
+        } catch (ResponseException e) {
+            assertEquals("Game not found, check id", e.getMessage());
+        }
+        try {
+            facade.createGame("game1");
+            Collection<Map<String, Object>> games = facade.listGames();
+            for (Map<String, Object> game : games) {
+                if (game.get("gameName").equals("game1")) {
+                    int gameID = Double.valueOf(game.get("gameID").toString()).intValue();
+                    facade.joinGame(gameID, "WHITE");
+                    facade.joinGame(gameID, "WHITE");
+                }
+            }
+        } catch (ResponseException e) {
+            assertEquals("Color already taken, or game is full", e.getMessage());
+        }
+    }
+
+    
 }
