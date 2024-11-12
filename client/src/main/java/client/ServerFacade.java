@@ -1,13 +1,11 @@
 package client;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.ListGameData;
 import server.request.game.CreateGameRequest;
 import server.request.game.JoinGameRequest;
 import server.request.user.*;
-import server.response.game.ListGamesResult;
 
 import java.io.*;
 import java.net.*;
@@ -21,21 +19,24 @@ public class ServerFacade {
 
     public ServerFacade(String serverURL) {
         this.serverURL = serverURL;
-        this.authToken = null;
+        authToken = null;
     }
 
-    public void register(RegisterRequest request) throws ResponseException {
+    public String register(RegisterRequest request) throws ResponseException {
         var resp = this.makeRequest("POST", "/user", request, AuthData.class);
         authToken = resp.authToken();
+        return authToken;
     }
 
-    public void login(LoginRequest request) throws ResponseException {
+    public String login(LoginRequest request) throws ResponseException {
         var resp = this.makeRequest("POST", "/session", request, AuthData.class);
         authToken = resp.authToken();
+        return authToken;
     }
 
-    public void logout() throws ResponseException {
+    public Boolean logout() throws ResponseException {
         this.makeRequest("DELETE", "/session", null, null);
+        return true;
     }
 
     public Collection<Map<String, Object>> listGames() throws ResponseException {
@@ -43,19 +44,22 @@ public class ServerFacade {
         return resp.games();
     }
 
-    public void createGame(String gameName) throws ResponseException {
+    public Boolean createGame(String gameName) throws ResponseException {
         CreateGameRequest request = new CreateGameRequest(authToken, gameName);
         this.makeRequest("POST", "/game", request, null);
+        return true;
     }
 
-    public void joinGame(int gameID, String color) throws ResponseException {
+    public Boolean joinGame(int gameID, String color) throws ResponseException {
         JoinGameRequest request = new JoinGameRequest(authToken, color, gameID);
         this.makeRequest("PUT", "/game", request, null);
+        return true;
     }
 
-    public void observeGame(int gameID) throws ResponseException {
+    public boolean observeGame(int gameID) throws ResponseException {
         JoinGameRequest request = new JoinGameRequest(authToken, "OBSERVE", gameID);
         this.makeRequest("PUT", "/game", request, null);
+        return true;
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
