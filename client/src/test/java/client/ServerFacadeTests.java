@@ -157,5 +157,31 @@ public class ServerFacadeTests {
         }
     }
 
-    
+    @Test void positiveObserveGame() throws ResponseException {
+        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        facade.createGame("game1");
+        Collection<Map<String, Object>> games = facade.listGames();
+        for (Map<String, Object> game : games) {
+            if (game.get("gameName").equals("game1")) {
+                int gameID = Double.valueOf(game.get("gameID").toString()).intValue();
+                facade.joinGame(gameID, "WHITE");
+                assertTrue(facade.observeGame(gameID));
+            }
+        }
+    }
+
+    @Test void negativeObserveGame() throws ResponseException {
+        try {
+            facade.observeGame(1);
+        } catch (ResponseException e) {
+            assertEquals("You are not logged in", e.getMessage());
+        }
+        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        try {
+            facade.observeGame(1);
+        } catch (ResponseException e) {
+            assertEquals("Game not found, check id", e.getMessage());
+        }
+    }
+
 }
