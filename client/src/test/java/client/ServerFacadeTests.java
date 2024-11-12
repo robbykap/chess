@@ -5,7 +5,6 @@ import server.ChessServer;
 import server.request.user.LoginRequest;
 import server.request.user.RegisterRequest;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 

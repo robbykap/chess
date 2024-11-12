@@ -15,7 +15,7 @@ public class ChessServer {
 
     private ClearService clearService;
 
-    private void _initializeComponents(AuthDAO authDAO, GameDAO gameDAO, UserDAO userDAO) {
+    private void setHandlers(AuthDAO authDAO, GameDAO gameDAO, UserDAO userDAO) {
         GameService gameService = new GameService(gameDAO, authDAO);
         UserService userService = new UserService(userDAO, authDAO);
         clearService = new ClearService(userDAO, authDAO, gameDAO);
@@ -31,14 +31,14 @@ public class ChessServer {
             GameDAO gameDAO = new MemoryGameDAO();
             UserDAO userDAO = new MemoryUserDAO();
 
-            _initializeComponents(authDAO, gameDAO, userDAO);
+            setHandlers(authDAO, gameDAO, userDAO);
 
         } else if (Objects.equals(service, "SQL")) {
             AuthDAO authDAO = new SQLAuthDAO();
             GameDAO gameDAO = new SQLGameDAO();
             UserDAO userDAO = new SQLUserDAO();
 
-            _initializeComponents(authDAO, gameDAO, userDAO);
+            setHandlers(authDAO, gameDAO, userDAO);
         }
     }
 

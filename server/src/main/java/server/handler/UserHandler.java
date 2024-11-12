@@ -14,7 +14,6 @@ import service.UserService;
 import spark.Request;
 import spark.Response;
 
-import server.request.user.*;
 import server.response.user.*;
 import server.response.exception.*;
 

@@ -7,8 +7,6 @@ import client.ServerFacade;
 import client.ResponseException;
 import client.State;
 
-import server.request.user.*;
-
 
 import java.util.Arrays;
 import java.util.Collection;

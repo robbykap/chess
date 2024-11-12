@@ -5,7 +5,6 @@ import model.AuthData;
 import model.ListGameData;
 import server.request.game.CreateGameRequest;
 import server.request.game.JoinGameRequest;
-import server.request.user.*;
 
 import java.io.*;
 import java.net.*;
@@ -27,11 +26,11 @@ public class ServerFacade {
             var resp = this.makeRequest("POST", "/user", request, AuthData.class);
             authToken = resp.authToken();
         } catch (ResponseException e) {
-            if (e.StatusCode() == 403) {
+            if (e.statusCode() == 403) {
                 throw new ResponseException(403, "Username already taken");
             }
             else {
-                throw new ResponseException(e.StatusCode(), e.getMessage());
+                throw new ResponseException(e.statusCode(), e.getMessage());
             }
         }
         return authToken;
@@ -42,11 +41,11 @@ public class ServerFacade {
             var resp = this.makeRequest("POST", "/session", request, AuthData.class);
             authToken = resp.authToken();
         } catch (ResponseException e) {
-            if (e.StatusCode() == 401) {
+            if (e.statusCode() == 401) {
                 throw new ResponseException(401, "Username or password incorrect");
             }
             else {
-                throw new ResponseException(e.StatusCode(), e.getMessage());
+                throw new ResponseException(e.statusCode(), e.getMessage());
             }
         }
 
@@ -57,11 +56,11 @@ public class ServerFacade {
         try {
             this.makeRequest("DELETE", "/session", null, null);
         } catch (ResponseException e) {
-            if (e.StatusCode() == 401) {
+            if (e.statusCode() == 401) {
                 throw new ResponseException(401, "You are not logged in");
             }
             else {
-                throw new ResponseException(e.StatusCode(), e.getMessage());
+                throw new ResponseException(e.statusCode(), e.getMessage());
             }
         }
         return true;
@@ -72,11 +71,11 @@ public class ServerFacade {
             var resp = this.makeRequest("GET", "/game", null, ListGameData.class);
             return resp.games();
         } catch (ResponseException e) {
-            if (e.StatusCode() == 401) {
+            if (e.statusCode() == 401) {
                 throw new ResponseException(401, "You are not logged in");
             }
             else {
-                throw new ResponseException(e.StatusCode(), e.getMessage());
+                throw new ResponseException(e.statusCode(), e.getMessage());
             }
         }
     }
@@ -86,11 +85,11 @@ public class ServerFacade {
             CreateGameRequest request = new CreateGameRequest(authToken, gameName);
             this.makeRequest("POST", "/game", request, null);
         } catch (ResponseException e) {
-            if (e.StatusCode() == 401) {
+            if (e.statusCode() == 401) {
                 throw new ResponseException(401, "You are not logged in");
             }
             else {
-                throw new ResponseException(e.StatusCode(), e.getMessage());
+                throw new ResponseException(e.statusCode(), e.getMessage());
             }
         }
         return true;
@@ -102,17 +101,17 @@ public class ServerFacade {
             this.makeRequest("PUT", "/game", request, null);
             return true;
         } catch (ResponseException e) {
-            if (e.StatusCode() == 401) {
+            if (e.statusCode() == 401) {
                 throw new ResponseException(401, "You are not logged in");
             }
-            else if (e.StatusCode() == 403) {
+            else if (e.statusCode() == 403) {
                 throw new ResponseException(403, "Color already taken, or game is full");
             }
-            else if (e.StatusCode() == 400) {
+            else if (e.statusCode() == 400) {
                 throw new ResponseException(400, "Game not found, check id");
             }
             else {
-                throw new ResponseException(e.StatusCode(), e.getMessage());
+                throw new ResponseException(e.statusCode(), e.getMessage());
             }
         }
     }
@@ -123,14 +122,14 @@ public class ServerFacade {
             this.makeRequest("PUT", "/game", request, null);
             return true;
         } catch (ResponseException e) {
-            if (e.StatusCode() == 401) {
+            if (e.statusCode() == 401) {
                 throw new ResponseException(401, "You are not logged in");
             }
-            else if (e.StatusCode() == 400) {
+            else if (e.statusCode() == 400) {
                 throw new ResponseException(400, "Game not found, check id");
             }
             else {
-                throw new ResponseException(e.StatusCode(), e.getMessage());
+                throw new ResponseException(e.statusCode(), e.getMessage());
             }
         }
     }
@@ -147,7 +146,7 @@ public class ServerFacade {
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
         } catch (ResponseException e) {
-            throw new ResponseException(e.StatusCode(), e.getMessage());
+            throw new ResponseException(e.statusCode(), e.getMessage());
         } catch (IOException | URISyntaxException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
