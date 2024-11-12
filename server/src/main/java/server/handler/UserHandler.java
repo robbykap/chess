@@ -17,6 +17,8 @@ import spark.Response;
 import server.response.user.*;
 import server.response.exception.*;
 
+import server.request.user.*;
+
 public class UserHandler {
     private final UserService userService;
 

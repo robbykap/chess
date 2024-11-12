@@ -7,11 +7,13 @@ import client.ServerFacade;
 import client.ResponseException;
 import client.State;
 
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import server.request.user.LoginRequest;
+import server.request.user.RegisterRequest;
 
 public class ChessClient {
     private String playerName = null;

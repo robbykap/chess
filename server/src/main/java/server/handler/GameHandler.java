@@ -14,6 +14,8 @@ import spark.Response;
 import server.response.game.*;
 import server.response.exception.*;
 
+import server.request.game.*;
+
 import java.util.Map;
 import java.util.Collection;
 

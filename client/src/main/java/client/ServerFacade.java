@@ -5,6 +5,8 @@ import model.AuthData;
 import model.ListGameData;
 import server.request.game.CreateGameRequest;
 import server.request.game.JoinGameRequest;
+import server.request.user.LoginRequest;
+import server.request.user.RegisterRequest;
 
 import java.io.*;
 import java.net.*;
