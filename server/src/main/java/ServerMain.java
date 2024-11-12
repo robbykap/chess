@@ -1,4 +1,4 @@
-import server.ChessServer;
+import server.Server;
 
 
 public class ServerMain {
@@ -10,7 +10,7 @@ public class ServerMain {
                 port = Integer.parseInt(args[0]);
             }
 
-            var server = new ChessServer();
+            var server = new Server();
             server.run(port);
             port = server.port();
             System.out.printf("Server started on port %d with %s%n", port);
