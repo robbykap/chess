@@ -48,4 +48,23 @@ public class ServerFacadeTests {
         }
     }
 
+    @Test
+    public void positiveLogout() throws ResponseException {
+        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        assertTrue(facade.logout());
+    }
+
+    @Test
+    public void negativeLogout() {
+        try {
+            facade.logout();
+        } catch (ResponseException e) {
+            assertEquals("Not logged in", e.getMessage());
+        }
+    }
+
+    @Test
+    
+
+
 }

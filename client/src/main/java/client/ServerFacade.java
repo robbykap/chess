@@ -44,7 +44,16 @@ public class ServerFacade {
     }
 
     public Boolean logout() throws ResponseException {
-        this.makeRequest("DELETE", "/session", null, null);
+        try {
+            this.makeRequest("DELETE", "/session", null, null);
+        } catch (ResponseException e) {
+            if (e.StatusCode() == 401) {
+                throw new ResponseException(401, "Not logged in");
+            }
+            else {
+                throw new ResponseException(e.StatusCode(), e.getMessage());
+            }
+        }
         return true;
     }
 
