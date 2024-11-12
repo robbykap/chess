@@ -13,10 +13,12 @@ public class ChessServer {
     private GameHandler gameHandler;
     private ClearHandler clearHandler;
 
+    private ClearService clearService;
+
     private void _initializeComponents(AuthDAO authDAO, GameDAO gameDAO, UserDAO userDAO) {
         GameService gameService = new GameService(gameDAO, authDAO);
         UserService userService = new UserService(userDAO, authDAO);
-        ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
+        clearService = new ClearService(userDAO, authDAO, gameDAO);
 
         userHandler = new UserHandler(userService);
         gameHandler = new GameHandler(gameService);
@@ -75,5 +77,9 @@ public class ChessServer {
 
     public int port() {
         return Spark.port();
+    }
+
+    public void clearDB() {
+        clearService.clear();
     }
 }

@@ -26,6 +26,11 @@ public class ServerFacadeTests {
         server.stop();
     }
 
+    @BeforeEach
+    public void clear() {
+        server.clearDB();
+    }
+
     @Test
     public void positiveRegister() throws ResponseException {
         var authToken = facade.register(
@@ -34,11 +39,12 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void negativeRegister() {
+    public void negativeRegister() throws ResponseException {
+        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
         try {
             facade.register(new RegisterRequest("player1", "password", "p1email.com"));
         } catch (ResponseException e) {
-            assertEquals("failure: 403", e.getMessage());
+            assertEquals("Username already taken", e.getMessage());
         }
     }
 

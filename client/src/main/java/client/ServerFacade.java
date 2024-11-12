@@ -23,8 +23,17 @@ public class ServerFacade {
     }
 
     public String register(RegisterRequest request) throws ResponseException {
-        var resp = this.makeRequest("POST", "/user", request, AuthData.class);
-        authToken = resp.authToken();
+        try {
+            var resp = this.makeRequest("POST", "/user", request, AuthData.class);
+            authToken = resp.authToken();
+        } catch (ResponseException e) {
+            if (e.StatusCode() == 403) {
+                throw new ResponseException(403, "Username already taken");
+            }
+            else {
+                throw new ResponseException(e.StatusCode(), e.getMessage());
+            }
+        }
         return authToken;
     }
 
@@ -73,7 +82,9 @@ public class ServerFacade {
             http.connect();
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
-        } catch (Exception ex) {
+        } catch (ResponseException e) {
+            throw new ResponseException(e.StatusCode(), e.getMessage());
+        } catch (IOException | URISyntaxException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
     }
@@ -93,7 +104,15 @@ public class ServerFacade {
     private void throwIfNotSuccessful(HttpURLConnection http) throws ResponseException, IOException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
-            throw new ResponseException(status, "failure: " + status);
+            if (status == 403) {
+                throw new ResponseException(403, "Already taken");
+            }
+            else if (status == 401) {
+                throw new ResponseException(401, "Unauthorized");
+            }
+            else if (status == 400) {
+                throw new ResponseException(400, "Bad request");
+            }
         }
     }
 
