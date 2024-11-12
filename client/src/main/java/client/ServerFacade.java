@@ -38,8 +38,18 @@ public class ServerFacade {
     }
 
     public String login(LoginRequest request) throws ResponseException {
-        var resp = this.makeRequest("POST", "/session", request, AuthData.class);
-        authToken = resp.authToken();
+        try {
+            var resp = this.makeRequest("POST", "/session", request, AuthData.class);
+            authToken = resp.authToken();
+        } catch (ResponseException e) {
+            if (e.StatusCode() == 401) {
+                throw new ResponseException(401, "Username or password incorrect");
+            }
+            else {
+                throw new ResponseException(e.StatusCode(), e.getMessage());
+            }
+        }
+
         return authToken;
     }
 

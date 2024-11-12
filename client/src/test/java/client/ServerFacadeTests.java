@@ -2,6 +2,7 @@ package client;
 
 import org.junit.jupiter.api.*;
 import server.ChessServer;
+import server.request.user.LoginRequest;
 import server.request.user.RegisterRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,7 +65,21 @@ public class ServerFacadeTests {
     }
 
     @Test
-    
+    public void positiveLogin() throws ResponseException {
+        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        var authToken = facade.login(new LoginRequest("player1", "password"));
+        assertTrue(authToken.length() > 10);
+    }
 
+    @Test
+    public void negativeLogin() {
+        try {
+            facade.login(new LoginRequest("player1", "password"));
+        } catch (ResponseException e) {
+            assertEquals("Username or password incorrect", e.getMessage());
+        }
+    }
+
+    
 
 }
