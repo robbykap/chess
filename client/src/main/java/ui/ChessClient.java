@@ -50,11 +50,11 @@ public class ChessClient {
 
     public String login(String... params) throws ResponseException {
         if (params.length == 2) {
-            state = State.SIGNEDIN;
             playerName = params[0];
             String password = params[1];
             LoginRequest request = new LoginRequest(playerName, password);
             server.login(request);
+            state = State.SIGNEDIN;
             return String.format(WHITE + "Logged in as " + BOLD + "%s", playerName + RESET_BOLD_FAINT);
         }
         throw new ResponseException(400, "Expected: login <USERNAME> <PASSWORD>");
@@ -62,12 +62,12 @@ public class ChessClient {
 
     public String register(String... params) throws ResponseException {
         if (params.length == 3) {
-            state = State.SIGNEDIN;
             playerName = params[0];
             String password = params[1];
             String email = params[2];
             RegisterRequest request = new RegisterRequest(playerName, password, email);
             server.register(request);
+            state = State.SIGNEDIN;
             return String.format(WHITE + "Registered as " + BOLD + "%s", playerName + RESET_BOLD_FAINT);
         }
         throw new ResponseException(400, "Expected: register <USERNAME> <PASSWORD> <EMAIL>");

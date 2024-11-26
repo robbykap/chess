@@ -29,7 +29,7 @@ public class ServerFacade {
             authToken = resp.authToken();
         } catch (ResponseException e) {
             if (e.statusCode() == 403) {
-                throw new ResponseException(403, "Username already taken");
+                throw new ResponseException(403, "Username or email already taken");
             }
             else {
                 throw new ResponseException(e.statusCode(), e.getMessage());
@@ -57,6 +57,7 @@ public class ServerFacade {
     public Boolean logout() throws ResponseException {
         try {
             this.makeRequest("DELETE", "/session", null, null);
+            authToken = null;
         } catch (ResponseException e) {
             if (e.statusCode() == 401) {
                 throw new ResponseException(401, "You are not logged in");

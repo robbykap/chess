@@ -24,7 +24,7 @@ public class DrawBoard {
         }
 
         boardString.append(SET_BG_COLOR_LIGHT_GREY).append(BOLD + BLACK).append("    a  b  c  d  e  f  g  h    ")
-                .append(RESET).append(RESET_BG_COLOR).append("\n");
+                .append(RESET).append(RESET_BG_COLOR);
 
         return boardString.toString();
     }
@@ -47,7 +47,7 @@ public class DrawBoard {
         }
 
         boardString.append(SET_BG_COLOR_LIGHT_GREY).append(BOLD + BLACK).append("    h  g  f  e  d  c  b  a    ")
-                .append(RESET).append(RESET_BG_COLOR).append("\n");
+                .append(RESET).append(RESET_BG_COLOR);
 
         return boardString.toString();
     }

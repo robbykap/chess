@@ -183,4 +183,10 @@ public class ServerFacadeTests {
         }
     }
 
+    @Test void register() throws ResponseException {
+        facade.register(new RegisterRequest("player1", "password", "p1email.com"));
+        facade.logout();
+        facade.register(new RegisterRequest("player2", "password", "p2email.com"));
+    }
+
 }
