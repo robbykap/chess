@@ -1,6 +1,6 @@
-package client;
+package ui;
 
-import ui.ChessClient;
+import client.ChessClient;
 
 import java.util.Scanner;
 

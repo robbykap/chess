@@ -1,4 +1,4 @@
-import client.Repl;
+import ui.Repl;
 
 public class ClientMain {
 

@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.ListGameData;
@@ -92,11 +93,10 @@ public class HttpCommunicator {
        return true;
    }
 
-   public Boolean joinGame(int gameID, String color) throws ResponseException {
+   public ChessGame joinGame(int gameID, String color) throws ResponseException {
        try {
            JoinGameRequest request = new JoinGameRequest(authToken, color, gameID);
-           this.makeRequest("PUT", "/game", request, null);
-           return true;
+           return this.makeRequest("PUT", "/game", request, ChessGame.class);
        } catch (ResponseException e) {
            if (e.statusCode() == 401) {
                throw new ResponseException(401, "You are not logged in");
@@ -110,11 +110,10 @@ public class HttpCommunicator {
        }
    }
 
-   public boolean observeGame(int gameID) throws ResponseException {
+   public ChessGame observeGame(int gameID) throws ResponseException {
        try {
            JoinGameRequest request = new JoinGameRequest(authToken, "OBSERVE", gameID);
-           this.makeRequest("PUT", "/game", request, null);
-           return true;
+           return this.makeRequest("PUT", "/game", request, null);
        } catch (ResponseException e) {
            if (e.statusCode() == 401) {
                throw new ResponseException(401, "You are not logged in");
@@ -125,6 +124,32 @@ public class HttpCommunicator {
            }
        }
    }
+
+    public boolean leaveGame() throws ResponseException {
+        try {
+            this.makeRequest("DELETE", "/game", null, null);
+            return true;
+        } catch (ResponseException e) {
+            if (e.statusCode() == 401) {
+                throw new ResponseException(401, "You are not logged in");
+            } else {
+                throw new ResponseException(e.statusCode(), e.getMessage());
+            }
+        }
+    }
+
+    public boolean leaveObserving() throws ResponseException {
+        try {
+            this.makeRequest("DELETE", "/game", null, null);
+            return true;
+        } catch (ResponseException e) {
+            if (e.statusCode() == 401) {
+                throw new ResponseException(401, "You are not logged in");
+            } else {
+                throw new ResponseException(e.statusCode(), e.getMessage());
+            }
+        }
+    }
 
        private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {

@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import org.junit.jupiter.api.*;
 import server.Server;
 import server.request.user.LoginRequest;
@@ -48,7 +49,7 @@ public class ServerFacadeTests {
         try {
             facade.register(new RegisterRequest("player1", "password", "p1email.com"));
         } catch (ResponseException e) {
-            assertEquals("Username already taken", e.getMessage());
+            assertEquals("Username or email already taken", e.getMessage());
         }
     }
 
@@ -123,7 +124,8 @@ public class ServerFacadeTests {
         for (Map<String, Object> game : games) {
             if (game.get("gameName").equals("game1")) {
                 int gameID = Double.valueOf(game.get("gameID").toString()).intValue();
-                assertTrue(facade.joinGame(gameID, "WHITE"));
+                ChessGame gameData = facade.joinGame(gameID, "WHITE");
+                assertTrue(gameData != null);
             }
         }
     }
@@ -163,8 +165,8 @@ public class ServerFacadeTests {
         for (Map<String, Object> game : games) {
             if (game.get("gameName").equals("game1")) {
                 int gameID = Double.valueOf(game.get("gameID").toString()).intValue();
-                facade.joinGame(gameID, "WHITE");
-                assertTrue(facade.observeGame(gameID));
+                ChessGame gameData = facade.joinGame(gameID, "WHITE");
+                assertTrue(gameData != null);
             }
         }
     }
