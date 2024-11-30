@@ -118,7 +118,7 @@ public class HttpCommunicator {
    public ChessGame observeGame(int gameID) throws ResponseException {
        try {
            JoinGameRequest request = new JoinGameRequest(authToken, "OBSERVE", gameID);
-           return this.makeRequest("PUT", "/game", request, null);
+           return this.makeRequest("PUT", "/game", request, ChessGame.class);
        } catch (ResponseException e) {
            if (e.statusCode() == 401) {
                throw new ResponseException(401, "You are not logged in");

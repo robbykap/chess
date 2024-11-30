@@ -2,15 +2,9 @@ package client;
 
 import static ui.EscapeSequences.*;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
-import chess.InvalidMoveException;
+import chess.*;
 import server.request.user.LoginRequest;
 import server.request.user.RegisterRequest;
 import ui.DrawBoard;
@@ -143,9 +137,7 @@ public class ChessClient {
 
             String result = "";
             result += String.format(WHITE + "Joined game " + BOLD + "%s\n\n", gameName + RESET_BOLD_FAINT);
-            result += DrawBoard.getBlackPerspective(chessGame);
-            result += "\n\n";
-            result += DrawBoard.getWhitePerspective(chessGame);
+            result += redraw();
             return result;
         }
         throw new ResponseException(400, "Expected: join <ID> [WHITE|BLACK]");
@@ -154,11 +146,11 @@ public class ChessClient {
     public String observeGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 1) {
-             int gameID = Integer.parseInt(params[0]);
+             int game = Integer.parseInt(params[0]);
 
-            Map<String, Object> game = gameDetails.get(gameID);
-            gameID = ((Double) game.get("gameID")).intValue();
-            String gameName = (String) game.get("gameName");
+            Map<String, Object> gameInfo = gameDetails.get(game);
+            gameID = ((Double) gameInfo.get("gameID")).intValue();
+            String gameName = (String) gameInfo.get("gameName");
 
             chessGame = server.observeGame(gameID);
 
@@ -219,7 +211,24 @@ public class ChessClient {
     }
 
     public String resign() throws ResponseException {
-        return "not yet implemented";
+        assertInGame();
+
+        System.out.println("Are you sure you want to resign? (yes/no)");
+        Scanner scanner = new Scanner(System.in);
+        String response = scanner.nextLine().trim().toLowerCase();
+
+        if (response.equals("yes")) {
+            String winner = (teamColor == ChessGame.TeamColor.WHITE) ? "Black" : "White";
+            String result = String.format(WHITE + "You have resigned. " + BOLD + "%s" + RESET_BOLD_FAINT + " wins.", winner);
+
+            ChessBoard board = chessGame.getBoard();
+            board.resetBoard();
+            chessGame.setBoard(board);
+
+            return result + "\n\n" + redraw();
+        } else {
+            return "Resignation cancelled.";
+        }
     }
 
     public String highlight(String... params) throws ResponseException {
