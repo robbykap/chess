@@ -20,6 +20,7 @@ public class ChessClient {
     private final ServerFacade server;
     private final String serverURL;
     private State state = State.SIGNEDOUT;
+    private Integer gameID;
     private ChessGame chessGame;
     private ChessGame.TeamColor teamColor;
     private final Map<Integer, Map<String, Object>> gameDetails = new HashMap<>();
@@ -27,6 +28,7 @@ public class ChessClient {
     public ChessClient(String serverURL) {
         this.server = new ServerFacade(serverURL);
         this.serverURL = serverURL;
+        this.gameID = null;
         this.chessGame = null;
         this.teamColor = null;
     }
@@ -49,6 +51,7 @@ public class ChessClient {
                 case "move" -> move(params);
                 case "resign" -> resign();
                 case "highlight" -> highlight(params);
+                case "clear" -> clear();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -126,12 +129,12 @@ public class ChessClient {
     public String joinGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 2) {
-            int gameID = Integer.parseInt(params[0]);
+            int game = Integer.parseInt(params[0]);
             String color = params[1].toUpperCase();
 
-            Map<String, Object> game = gameDetails.get(gameID);
-            gameID = ((Double) game.get("gameID")).intValue();
-            String gameName = (String) game.get("gameName");
+            Map<String, Object> gameInfo = gameDetails.get(game);
+            gameID = ((Double) gameInfo.get("gameID")).intValue();
+            String gameName = (String) gameInfo.get("gameName");
 
             chessGame = server.joinGame(gameID, color);
 
@@ -183,13 +186,18 @@ public class ChessClient {
     public String leave() throws ResponseException {
         assertInGame();
         state = State.SIGNEDIN;
+
+        server.leaveGame(gameID, teamColor.toString());
+
         teamColor = null;
         chessGame = null;
+
         return String.format(WHITE + "Left game " + BOLD + "%s", playerName + RESET_BOLD_FAINT);
     }
 
     public String move(String... params) throws ResponseException, InvalidMoveException {
         assertInGame();
+        assertUserTurn();
         if (params.length == 2 && params[0].matches("[a-h][1-8]") && params[1].matches("[a-h][1-8]")) {
             String[] start = params[0].split("");
             String[] end = params[1].split("");
@@ -216,6 +224,7 @@ public class ChessClient {
 
     public String highlight(String... params) throws ResponseException {
         assertInGame();
+        assertUserTurn();
         if (params.length == 1 && params[0].matches("[a-h][1-8]")) {
             String[] pos = params[0].split("");
             int col = pos[0].charAt(0) - 96;
@@ -225,6 +234,16 @@ public class ChessClient {
             return result;
         }
         throw new ResponseException(400, "Expected: highlight <POS>");
+    }
+
+    public String clear() throws ResponseException {
+        server.clear();
+        state = State.SIGNEDOUT;
+        gameDetails.clear();
+        chessGame = null;
+        teamColor = null;
+        playerName = null;
+        return "Cleared all games";
     }
 
     public String help() {
@@ -277,6 +296,12 @@ public class ChessClient {
     private void assertInGame() throws ResponseException {
         if (state != State.PLAYING && state != State.OBSERVING) {
             throw new ResponseException(400, "You must be in a game");
+        }
+    }
+
+    private void assertUserTurn() throws ResponseException {
+        if (chessGame.getTeamTurn() != teamColor) {
+            throw new ResponseException(400, "It is not your turn");
         }
     }
 

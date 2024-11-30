@@ -121,4 +121,40 @@ public class GameService {
         }
 
     }
+
+    public void leaveGame(String authToken, String color, int gameID) throws UnauthorizedException {
+        // Verify the authToken, throw UnauthorizedException if invalid
+        try {
+            AuthData authData = authDAO.getAuth(authToken);
+
+            String username = authData.username();
+
+            // Get the game, throw BadRequestException if failed
+            GameData game;
+            try {
+                game = gameDAO.getGame(gameID);
+            } catch (DataAccessException e) {
+                throw new UnauthorizedException(e.getMessage());
+            }
+
+            switch (color) {
+                case "WHITE" -> {
+                    // Check if the requested color is already taken, throw AlreadyTakenException if taken
+                    if (game.whiteUsername() != null && game.whiteUsername().equals(username)) {
+                        gameDAO.updateGame(new GameData(gameID, null, game.blackUsername(), game.gameName(), game.game()));
+                    }
+                }
+                case "BLACK" -> {
+                    // Check if the requested color is already taken, throw AlreadyTakenException if taken
+                    if (game.blackUsername() != null && game.blackUsername().equals(username)) {
+                        gameDAO.updateGame(new GameData(gameID, game.whiteUsername(), null, game.gameName(), game.game()));
+                    }
+                }
+            }
+
+        } catch (DataAccessException e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
+
+    }
 }

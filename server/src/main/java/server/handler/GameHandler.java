@@ -73,4 +73,17 @@ public class GameHandler {
             return AlreadyTaken.response(resp);
         }
     }
+
+    public Object leaveGame(Request req, Response resp) {
+        LeaveGameRequest leaveGameRequest = new Gson().fromJson(req.body(), LeaveGameRequest.class);
+        leaveGameRequest = new LeaveGameRequest(req.headers("Authorization"), leaveGameRequest.gameID(), leaveGameRequest.playerColor());
+
+        try {
+            gameService.leaveGame(leaveGameRequest.authToken(), leaveGameRequest.playerColor(), leaveGameRequest.gameID());
+            return LeaveGameResult.response(resp);
+
+        } catch (UnauthorizedException e) {
+            return Unauthorized.response(resp);
+        }
+    }
 }

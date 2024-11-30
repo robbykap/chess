@@ -1,6 +1,8 @@
 package ui;
 
 import chess.*;
+import client.ResponseException;
+import dataaccess.BadRequestException;
 
 import java.util.Collection;
 
@@ -97,15 +99,24 @@ public class DrawBoard {
         return boardString.toString();
     }
 
-    public static String highlightMoves(ChessGame game, ChessPosition pos) {
+    public static String highlightMoves(ChessGame game, ChessPosition pos) throws ResponseException {
         highlight = true;
+
+        ChessPiece piece = game.getBoard().getPiece(pos);
+
+        if (piece == null) {
+            throw new ResponseException(400, "No piece at position " + (char) (pos.getColumn() + 96) + pos.getRow());
+        }
+
+        if (piece.getTeamColor() != game.getTeamTurn()) {
+            throw new ResponseException(400, "Requested piece is not on your team");
+        }
 
         Collection<ChessMove> moves = game.validMoves(pos);
         for (ChessMove move : moves) {
             ChessPosition endPos = move.getEndPosition();
             board[endPos.getRow() - 1][7 - (endPos.getColumn() - 1)] = SET_BG_COLOR_GREEN + "   " + RESET_BG_COLOR;
         }
-        ChessPiece piece = game.getBoard().getPiece(pos);
 
         return piece.getTeamColor() == ChessGame.TeamColor.WHITE ? getWhitePerspective(game) : getBlackPerspective(game);
     }

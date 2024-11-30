@@ -110,6 +110,11 @@ public class HttpCommunicator {
        }
    }
 
+  public ChessGame leaveGame(int gameID, String color) throws ResponseException {
+       JoinGameRequest request = new JoinGameRequest(authToken, color, gameID);
+       return this.makeRequest("DELETE", "/game", request, null);
+   }
+
    public ChessGame observeGame(int gameID) throws ResponseException {
        try {
            JoinGameRequest request = new JoinGameRequest(authToken, "OBSERVE", gameID);
@@ -125,31 +130,19 @@ public class HttpCommunicator {
        }
    }
 
-    public boolean leaveGame() throws ResponseException {
-        try {
-            this.makeRequest("DELETE", "/game", null, null);
-            return true;
-        } catch (ResponseException e) {
-            if (e.statusCode() == 401) {
-                throw new ResponseException(401, "You are not logged in");
-            } else {
-                throw new ResponseException(e.statusCode(), e.getMessage());
+   public void clear() throws ResponseException {
+         try {
+                this.makeRequest("DELETE", "/db", null, null);
+            } catch (ResponseException e) {
+                if (e.statusCode() == 401) {
+                    throw new ResponseException(401, "You are not logged in");
+                } else {
+                    throw new ResponseException(e.statusCode(), e.getMessage());
+                }
             }
-        }
-    }
+   }
 
-    public boolean leaveObserving() throws ResponseException {
-        try {
-            this.makeRequest("DELETE", "/game", null, null);
-            return true;
-        } catch (ResponseException e) {
-            if (e.statusCode() == 401) {
-                throw new ResponseException(401, "You are not logged in");
-            } else {
-                throw new ResponseException(e.statusCode(), e.getMessage());
-            }
-        }
-    }
+
 
        private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {
