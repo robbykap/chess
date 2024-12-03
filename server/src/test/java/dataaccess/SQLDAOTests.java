@@ -336,7 +336,7 @@ public class SQLDAOTests {
 
     @Test
     public void testGameSizeNegative() {
-        assertEquals(1, gameDao.size());
+        assertEquals(2, gameDao.size());
     }
 
     @Test

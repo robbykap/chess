@@ -12,10 +12,10 @@ import model.GameData;
 
 import org.eclipse.jetty.websocket.api.annotations.*;
 import server.Server;
-import websocket.commands.Connect;
-import websocket.commands.Leave;
-import websocket.commands.Move;
-import websocket.commands.Resign;
+import websocket.commands.ConnectCommand;
+import websocket.commands.LeaveCommand;
+import websocket.commands.MoveCommand;
+import websocket.commands.ResignCommand;
 import websocket.messages.LoadGame;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
@@ -38,7 +38,7 @@ public class WebsocketHandler {
         System.out.printf("Received: %s%n", message);
         try {
             if (message.contains("\"commandType\":\"CONNECT\"")) {
-                Connect command = new Gson().fromJson(message, Connect.class);
+                ConnectCommand command = new Gson().fromJson(message, ConnectCommand.class);
                 int gameID = command.getGameID();
 
                 if (Server.sessionGameMap.get(gameID) != null) {
@@ -48,25 +48,25 @@ public class WebsocketHandler {
                 }
 
                 Server.authDataGameMap.put(command.getAuthToken(), gameID);
-                handleConnect(session, command);
+                handleConnectCommand(session, command);
 
             } else if (message.contains("\"commandType\":\"LEAVE\"")) {
-                Leave command = new Gson().fromJson(message, Leave.class);
+                LeaveCommand command = new Gson().fromJson(message, LeaveCommand.class);
                 int gameID = command.getGameID();
                 String authToken = command.getAuthToken();
 
-                handleLeave(session, command);
+                handleLeaveCommand(session, command);
 
                 Server.sessionGameMap.get(gameID).remove(authToken);
                 Server.authDataGameMap.remove(authToken);
 
             } else if (message.contains("\"commandType\":\"MAKE_MOVE\"")) {
-                Move command = new Gson().fromJson(message, Move.class);
-                handleMove(session, command);
+                MoveCommand command = new Gson().fromJson(message, MoveCommand.class);
+                handleMoveCommand(session, command);
 
             } else if (message.contains("\"commandType\":\"RESIGN\"")) {
-                Resign command = new Gson().fromJson(message, Resign.class);
-                handleResign(session, command);
+                ResignCommand command = new Gson().fromJson(message, ResignCommand.class);
+                handleResignCommand(session, command);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -84,13 +84,11 @@ public class WebsocketHandler {
         cause.printStackTrace();
     }
 
-    private void handleConnect(Session session, Connect command) throws IOException {
+    private void handleConnectCommand(Session session, ConnectCommand command) throws IOException {
         try {
             AuthData authData = Server.userService.getAuthData(command.getAuthToken());
             GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
-
-            Server.gameMap.put(command.getGameID(), gameData.game());
-
+            
             Notification notification = new Notification("%s has connected to the game" + authData.username());
             broadcastMessage(command.getAuthToken(), notification);
 
@@ -104,7 +102,7 @@ public class WebsocketHandler {
         }
     }
 
-    private void handleLeave(Session session, Leave command) throws IOException {
+    private void handleLeaveCommand(Session session, LeaveCommand command) throws IOException {
         try {
             AuthData authData = Server.userService.getAuthData(command.getAuthToken());
             GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
@@ -119,7 +117,7 @@ public class WebsocketHandler {
         }
     }
 
-    public void handleMove(Session session, Move command) throws IOException {
+    public void handleMoveCommand(Session session, MoveCommand command) throws IOException {
         try {
             AuthData authData = Server.userService.getAuthData(command.getAuthToken());
             GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
@@ -175,7 +173,7 @@ public class WebsocketHandler {
         }
     }
 
-    private void handleResign(Session session, Resign command) throws IOException {
+    private void handleResignCommand(Session session, ResignCommand command) throws IOException {
         try {
             AuthData authData = Server.userService.getAuthData(command.getAuthToken());
             GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());

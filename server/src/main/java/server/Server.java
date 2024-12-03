@@ -26,9 +26,6 @@ public class Server {
     // {AuthToken: GameID}
     public static ConcurrentHashMap<String, Integer> authDataGameMap = new ConcurrentHashMap<>();
 
-    // {GameID: ChessGame}
-    public static ConcurrentHashMap<Integer, ChessGame> gameMap = new ConcurrentHashMap<>();
-
     private void setHandlers(AuthDAO authDAO, GameDAO gameDAO, UserDAO userDAO) {
         gameService = new GameService(gameDAO, authDAO);
         userService = new UserService(userDAO, authDAO);
