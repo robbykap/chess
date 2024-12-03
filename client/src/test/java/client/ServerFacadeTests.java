@@ -11,7 +11,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
 public class ServerFacadeTests {
 
     private static Server server;
@@ -35,6 +34,22 @@ public class ServerFacadeTests {
         server.clearDB();
     }
 
+    private void registerAndLogin(String username, String password, String email) throws ResponseException {
+        facade.register(new RegisterRequest(username, password, email));
+        facade.login(new LoginRequest(username, password));
+    }
+
+    private int createAndGetGameID(String gameName) throws ResponseException {
+        facade.createGame(gameName);
+        Collection<Map<String, Object>> games = facade.listGames();
+        for (Map<String, Object> game : games) {
+            if (game.get("gameName").equals(gameName)) {
+                return Double.valueOf(game.get("gameID").toString()).intValue();
+            }
+        }
+        throw new ResponseException("Game not found");
+    }
+
     @Test
     public void positiveRegister() throws ResponseException {
         var authToken = facade.register(
@@ -54,7 +69,7 @@ public class ServerFacadeTests {
 
     @Test
     public void positiveLogout() throws ResponseException {
-        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        registerAndLogin("player1", "password", "p1@email.com");
         assertTrue(facade.logout());
     }
 
@@ -85,7 +100,7 @@ public class ServerFacadeTests {
 
     @Test
     public void positiveCreateGame() throws ResponseException {
-        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        registerAndLogin("player1", "password", "p1@email.com");
         assertTrue(facade.createGame("game1"));
     }
 
@@ -100,7 +115,7 @@ public class ServerFacadeTests {
 
     @Test
     public void positiveListGames() throws ResponseException {
-        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        registerAndLogin("player1", "password", "p1@email.com");
         facade.createGame("game1");
         var games = facade.listGames();
         assertEquals(1, games.size());
@@ -117,16 +132,10 @@ public class ServerFacadeTests {
 
     @Test
     public void positiveJoinGame() throws ResponseException {
-        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
-        facade.createGame("game1");
-        Collection<Map<String, Object>> games = facade.listGames();
-        for (Map<String, Object> game : games) {
-            if (game.get("gameName").equals("game1")) {
-                int gameID = Double.valueOf(game.get("gameID").toString()).intValue();
-                ChessGame gameData = facade.joinGame(gameID, "WHITE");
-                assertNotNull(gameData);
-            }
-        }
+        registerAndLogin("player1", "password", "p1@email.com");
+        int gameID = createAndGetGameID("game1");
+        ChessGame gameData = facade.joinGame(gameID, "WHITE");
+        assertNotNull(gameData);
     }
 
     @Test
@@ -136,47 +145,37 @@ public class ServerFacadeTests {
         } catch (ResponseException e) {
             assertEquals("You are not logged in", e.getMessage());
         }
-        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        registerAndLogin("player1", "password", "p1@email.com");
         try {
             facade.joinGame(1, "WHITE");
         } catch (ResponseException e) {
             assertEquals("Game not found, check id", e.getMessage());
         }
         try {
-            facade.createGame("game1");
-            Collection<Map<String, Object>> games = facade.listGames();
-            for (Map<String, Object> game : games) {
-                if (game.get("gameName").equals("game1")) {
-                    int gameID = Double.valueOf(game.get("gameID").toString()).intValue();
-                    facade.joinGame(gameID, "WHITE");
-                    facade.joinGame(gameID, "WHITE");
-                }
-            }
+            int gameID = createAndGetGameID("game1");
+            facade.joinGame(gameID, "WHITE");
+            facade.joinGame(gameID, "WHITE");
         } catch (ResponseException e) {
             assertEquals("Color already taken, or game is full", e.getMessage());
         }
     }
 
-    @Test void positiveObserveGame() throws ResponseException {
-        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
-        facade.createGame("game1");
-        Collection<Map<String, Object>> games = facade.listGames();
-        for (Map<String, Object> game : games) {
-            if (game.get("gameName").equals("game1")) {
-                int gameID = Double.valueOf(game.get("gameID").toString()).intValue();
-                ChessGame gameData = facade.joinGame(gameID, "WHITE");
-                assertNotNull(gameData);
-            }
-        }
+    @Test
+    public void positiveObserveGame() throws ResponseException {
+        registerAndLogin("player1", "password", "p1@email.com");
+        int gameID = createAndGetGameID("game1");
+        ChessGame gameData = facade.observeGame(gameID);
+        assertNotNull(gameData);
     }
 
-    @Test void negativeObserveGame() throws ResponseException {
+    @Test
+    public void negativeObserveGame() throws ResponseException {
         try {
             facade.observeGame(1);
         } catch (ResponseException e) {
             assertEquals("You are not logged in", e.getMessage());
         }
-        facade.register(new RegisterRequest("player1", "password", "p1@email.com"));
+        registerAndLogin("player1", "password", "p1@email.com");
         try {
             facade.observeGame(1);
         } catch (ResponseException e) {
@@ -184,10 +183,10 @@ public class ServerFacadeTests {
         }
     }
 
-    @Test void register() throws ResponseException {
+    @Test
+    public void register() throws ResponseException {
         facade.register(new RegisterRequest("player1", "password", "p1email.com"));
         facade.logout();
         facade.register(new RegisterRequest("player2", "password", "p2email.com"));
     }
-
 }
