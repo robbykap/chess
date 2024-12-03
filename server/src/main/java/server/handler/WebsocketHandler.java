@@ -88,7 +88,7 @@ public class WebsocketHandler {
         try {
             AuthData authData = Server.userService.getAuthData(command.getAuthToken());
             GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
-            
+
             Notification notification = new Notification("%s has connected to the game" + authData.username());
             broadcastMessage(command.getAuthToken(), notification);
 

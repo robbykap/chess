@@ -2,7 +2,6 @@ package ui;
 
 import chess.*;
 import client.ResponseException;
-import dataaccess.BadRequestException;
 
 import java.util.Collection;
 
