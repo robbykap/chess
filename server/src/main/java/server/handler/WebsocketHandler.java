@@ -1,6 +1,7 @@
 package server.handler;
 
 import chess.ChessGame;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.BadRequestException;
 import dataaccess.UnauthorizedException;
@@ -13,6 +14,7 @@ import model.GameData;
 import server.Server;
 import websocket.commands.Connect;
 import websocket.commands.Leave;
+import websocket.commands.Move;
 import websocket.messages.LoadGame;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
@@ -63,7 +65,17 @@ public class WebsocketHandler implements WebSocketListener {
 
                 Server.sessionGameMap.get(gameID).remove(authToken);
                 Server.authDataGameMap.remove(authToken);
-            } else if (messag)
+
+            } else if (message.contains("\"commandType\":\"MAKE_MOVE\"")) {
+                Move command = new Gson().fromJson(message, Move.class);
+                session = Server.sessionGameMap.get(command.getGameID()).get(command.getAuthToken());
+                handleMove(session, command);
+
+            } else if (message.contains("\"commandType\":\"RESIGN\"")) {
+                Resign command = new Gson().fromJson(message, Resign.class);
+                session = Server.sessionGameMap.get(command.getGameID()).get(command.getAuthToken());
+                handleResign(session, command);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -85,6 +97,8 @@ public class WebsocketHandler implements WebSocketListener {
         try {
             AuthData authData = Server.userService.getAuthData(command.getAuthToken());
             GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
+
+            Server.gameMap.put(command.getGameID(), gameData.game());
 
             Notification notification = new Notification("%s has connected to the game" + authData.username());
             broadcastMessage(command.getAuthToken(), notification);
@@ -108,6 +122,62 @@ public class WebsocketHandler implements WebSocketListener {
 
         } catch (UnauthorizedException e) {
             sendError(session, new Error("Error: Not authorized"));
+        }
+    }
+
+    public void handleMove(Session session, Move command) throws IOException {
+        try {
+            AuthData authData = Server.userService.getAuthData(command.getAuthToken());
+            GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
+            ChessGame.TeamColor playerColor = getPlayerColor(authData.username(), gameData);
+
+            if (playerColor == null) {
+                sendError(session, new Error("Error: Observer cannot make moves"));
+                return;
+            }
+
+            if (gameData.game().isOver()) {
+                sendError(session, new Error("Error: Game is over"));
+                return;
+            }
+
+            if (gameData.game().getTeamTurn() != playerColor) {
+                sendError(session, new Error("Error: Not your turn"));
+                return;
+            }
+
+            ChessGame.TeamColor oppColor = playerColor == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            gameData.game().makeMove(command.getMove());
+
+            if (gameData.game().isInCheckmate(oppColor)) {
+                gameData.game().setOver(true);
+                Notification notification = new Notification("Checkmate! %s wins!".formatted(authData.username()));
+                broadcastMessage(command.getAuthToken(), notification);
+
+            } else if (gameData.game().isInStalemate(oppColor)) {
+                gameData.game().setOver(true);
+                Notification notification = new Notification("Stalemate! Game is a draw");
+                broadcastMessage(command.getAuthToken(), notification);
+
+            } else if (gameData.game().isInCheck(oppColor)) {
+                Notification notification = new Notification("Check! %s is in check".formatted(authData.username()));
+                broadcastMessage(command.getAuthToken(), notification);
+
+            } else {
+                Notification notification = new Notification("%s has made a move".formatted(authData.username()));
+                broadcastMessage(command.getAuthToken(), notification);
+            }
+
+            Server.gameService.updateGame(command.getAuthToken(), gameData);
+
+            LoadGame loadGame = new LoadGame(gameData.game());
+            broadcastMessage(command.getAuthToken(), loadGame, true);
+        } catch (UnauthorizedException e) {
+            sendError(session, new Error("Error: Not authorized"));
+        } catch (BadRequestException e) {
+            sendError(session, new Error("Error: Invalid game"));
+        } catch (InvalidMoveException e) {
+            sendError(session, new Error("Error: Invalid move"));
         }
     }
 
@@ -136,5 +206,15 @@ public class WebsocketHandler implements WebSocketListener {
     private void sendError(Session session, Error error) throws IOException {
         System.out.printf("Error: %s%n", new Gson().toJson(error));
         session.getRemote().sendString(new Gson().toJson(error));
+    }
+
+    private ChessGame.TeamColor getPlayerColor(String username, GameData gameData) {
+        if (gameData.whiteUsername().equals(username)) {
+            return ChessGame.TeamColor.WHITE;
+        } else if (gameData.blackUsername().equals(username)) {
+            return ChessGame.TeamColor.BLACK;
+        } else {
+            return null;
+        }
     }
 }

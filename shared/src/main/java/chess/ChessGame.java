@@ -15,6 +15,7 @@ public class ChessGame {
 
     private TeamColor teamTurn = TeamColor.WHITE;
     private ChessBoard board = new ChessBoard();
+    private boolean isOver = false;
 
     public ChessGame() {
         board.resetBoard();
@@ -34,6 +35,14 @@ public class ChessGame {
      */
     public void setTeamTurn(TeamColor team) { teamTurn = team; }
 
+
+    public boolean isOver() {
+        return isOver;
+    }
+
+    public void setOver(boolean over) {
+        isOver = over;
+    }
 
     /**
      * Enum identifying the 2 possible teams in a chess game

@@ -168,4 +168,15 @@ public class GameService {
             throw new BadRequestException(e.getMessage());
         }
     }
+
+    public void updateGame(String authToken, GameData gameData) throws UnauthorizedException {
+        // Verify the authToken, throw UnauthorizedException if invalid
+        try {
+            authDAO.getAuth(authToken);
+            gameDAO.updateGame(gameData);
+
+        } catch (DataAccessException e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
+    }
 }
