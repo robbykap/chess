@@ -47,7 +47,7 @@ public class ServerFacadeTests {
                 return Double.valueOf(game.get("gameID").toString()).intValue();
             }
         }
-        throw new ResponseException("Game not found");
+        throw new ResponseException(403, "Game not found");
     }
 
     @Test
