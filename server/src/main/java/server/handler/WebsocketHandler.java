@@ -2,6 +2,7 @@ package server.handler;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import dataaccess.BadRequestException;
 import dataaccess.UnauthorizedException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
@@ -11,11 +12,15 @@ import model.GameData;
 
 import server.Server;
 import websocket.commands.Connect;
+import websocket.commands.Leave;
 import websocket.messages.LoadGame;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
+import websocket.messages.Error;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class WebsocketHandler implements WebSocketListener {
 
@@ -24,7 +29,6 @@ public class WebsocketHandler implements WebSocketListener {
     @Override
     public void onWebSocketConnect(Session session) {
         this.session = session;
-        Server.sessionGameMap.put(session, 0);
         System.out.println("WebSocket Connected: " + session.getRemoteAddress().getHostName());
     }
 
@@ -36,17 +40,38 @@ public class WebsocketHandler implements WebSocketListener {
     @Override
     public void onWebSocketText(String message) {
         System.out.printf("Received: %s%n", message);
-        if (message.contains("\"commandType\":\"CONNECT\"")) {
-            Connect command = new Gson().fromJson(message, Connect.class);
-            Server.sessionGameMap.replace(session, command.getGameID());
-            handleConnect(session, command);
+        try {
+            if (message.contains("\"commandType\":\"CONNECT\"")) {
+                Connect command = new Gson().fromJson(message, Connect.class);
+                int gameID = command.getGameID();
+
+                if (Server.sessionGameMap.get(gameID) != null) {
+                    Server.sessionGameMap.get(gameID).put(command.getAuthToken(), session);
+                } else {
+                    Server.sessionGameMap.put(gameID, new ConcurrentHashMap<>(Map.of(command.getAuthToken(), session)));
+                }
+
+                Server.authDataGameMap.put(command.getAuthToken(), gameID);
+                handleConnect(session, command);
+
+            } else if (message.contains("\"commandType\":\"LEAVE\"")) {
+                Leave command = new Gson().fromJson(message, Leave.class);
+                int gameID = command.getGameID();
+                String authToken = command.getAuthToken();
+
+                handleLeave(session, command);
+
+                Server.sessionGameMap.get(gameID).remove(authToken);
+                Server.authDataGameMap.remove(authToken);
+            } else if (messag)
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     public void onWebSocketClose(int statusCode, String reason) {
         System.out.printf("WebSocket Closed. Code: %d, Reason: %s%n", statusCode, reason);
-        Server.sessionGameMap.remove(session);
         this.session = null;
     }
 
@@ -56,36 +81,49 @@ public class WebsocketHandler implements WebSocketListener {
         cause.printStackTrace();
     }
 
-    private void handleConnect(Session session, Connect command) {
+    private void handleConnect(Session session, Connect command) throws IOException {
         try {
             AuthData authData = Server.userService.getAuthData(command.getAuthToken());
             GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
 
             Notification notification = new Notification("%s has connected to the game" + authData.username());
-            broadcastMessage(session, notification);
+            broadcastMessage(command.getAuthToken(), notification);
 
             LoadGame loadGame = new LoadGame(gameData.game());
             sendMessage(session, loadGame);
 
         } catch (UnauthorizedException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            sendError(session, new Error("Error: Not authorized"));
+        } catch (BadRequestException e) {
+            sendError(session, new Error("Error: Not a valid request"));
         }
     }
 
-    public void broadcastMessage(Session currSession, ServerMessage message) throws IOException {
-        broadcastMessage(currSession, message, false);
+    private void handleLeave(Session session, Leave command) throws IOException {
+        try {
+            AuthData authData = Server.userService.getAuthData(command.getAuthToken());
+
+            Notification notification = new Notification("%s has left the game".formatted(authData.username()));
+            broadcastMessage(command.getAuthToken(), notification);
+
+        } catch (UnauthorizedException e) {
+            sendError(session, new Error("Error: Not authorized"));
+        }
     }
 
-    // Send the notification to all clients on the current game
-    public void broadcastMessage(Session currSession, ServerMessage message, boolean toSelf) throws IOException {
+    public void broadcastMessage(String authToken , ServerMessage message) throws IOException {
+        broadcastMessage(authToken, message, false);
+    }
+
+    public void broadcastMessage(String authToken , ServerMessage message, boolean toSelf) throws IOException {
         System.out.printf("Broadcasting (toSelf: %s): %s%n", toSelf, new Gson().toJson(message));
-        for (Session session : Server.sessionGameMap.keySet()) {
-            boolean inAGame = Server.sessionGameMap.get(session) != 0;
-            boolean sameGame = Server.sessionGameMap.get(session).equals(Server.sessionGameMap.get(currSession));
-            boolean isSelf = session == currSession;
-            if ((toSelf || !isSelf) && inAGame && sameGame) {
+        int GameID = Server.authDataGameMap.get(authToken);
+
+        for (Map.Entry<String, Session> entry : Server.sessionGameMap.get(GameID).entrySet()) {
+            String user = entry.getKey();
+            Session session = entry.getValue();
+
+            if (toSelf || !user.equals(authToken)) {
                 sendMessage(session, message);
             }
         }

@@ -19,7 +19,11 @@ public class Server {
     public static UserService userService;
     private ClearService clearService;
 
-    public static ConcurrentHashMap<Session, Integer> sessionGameMap = new ConcurrentHashMap<>();
+    // {GameID: {AuthToken: Session}}
+    public static ConcurrentHashMap<Integer, ConcurrentHashMap<String, Session>> sessionGameMap = new ConcurrentHashMap<>();
+
+    // {AuthToken: GameID}
+    public static ConcurrentHashMap<String, Integer> authDataGameMap = new ConcurrentHashMap<>();
 
     private void setHandlers(AuthDAO authDAO, GameDAO gameDAO, UserDAO userDAO) {
         gameService = new GameService(gameDAO, authDAO);
