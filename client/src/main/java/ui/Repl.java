@@ -1,16 +1,19 @@
 package ui;
 
 import client.ChessClient;
+import client.NotificationHandler;
+import websocket.messages.LoadGame;
+import websocket.messages.Notification;
 
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class Repl {
+public class Repl implements NotificationHandler {
     private final ChessClient client;
 
     public Repl(String serverURL) {
-        this.client = new ChessClient(serverURL);
+        this.client = new ChessClient(serverURL, this);
     }
 
     public void run() {
@@ -38,5 +41,14 @@ public class Repl {
 
     private void printPrompt() {
         System.out.print(WHITE + BOLD + "[" + client.getState() + "] " + RESET_BOLD_FAINT + ">>> " + GREEN + FAINT);
+    }
+
+    @Override
+    public void notify(Notification notification) {
+        if (notification.getMessage() != null) {
+            System.out.print("\n" + MAGENTA + BOLD + "[Notification] " + RESET_BOLD_FAINT + ">>> " + GREEN + FAINT);
+            System.out.println(MAGENTA + BOLD + notification.getMessage());
+            printPrompt();
+        }
     }
 }

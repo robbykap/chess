@@ -12,15 +12,19 @@ import ui.DrawBoard;
 public class ChessClient {
     private String playerName = null;
     private final ServerFacade server;
-    private final String serverURL;
+    private WebSocketFacade ws;
     private State state = State.SIGNEDOUT;
+    private final NotificationHandler notificationHandler;
+    private final String serverURL;
     private Integer gameID;
     private ChessGame chessGame;
     private ChessGame.TeamColor teamColor;
     private final Map<Integer, Map<String, Object>> gameDetails = new HashMap<>();
+    private String authToken = null;
 
-    public ChessClient(String serverURL) {
+    public ChessClient(String serverURL, NotificationHandler notificationHandler) {
         this.server = new ServerFacade(serverURL);
+        this.notificationHandler = notificationHandler;
         this.serverURL = serverURL;
         this.gameID = null;
         this.chessGame = null;
@@ -61,7 +65,7 @@ public class ChessClient {
             playerName = params[0];
             String password = params[1];
             LoginRequest request = new LoginRequest(playerName, password);
-            server.login(request);
+            authToken = server.login(request);
             state = State.SIGNEDIN;
             return String.format(WHITE + "Logged in as " + BOLD + "%s", playerName + RESET_BOLD_FAINT);
         }
@@ -74,7 +78,7 @@ public class ChessClient {
             String password = params[1];
             String email = params[2];
             RegisterRequest request = new RegisterRequest(playerName, password, email);
-            server.register(request);
+            authToken = server.register(request);
             state = State.SIGNEDIN;
             return String.format(WHITE + "Registered as " + BOLD + "%s", playerName + RESET_BOLD_FAINT);
         }
@@ -85,6 +89,7 @@ public class ChessClient {
         if (state == State.SIGNEDIN) {
             state = State.SIGNEDOUT;
             server.logout();
+            authToken = null;
             return String.format(WHITE + "Logged out " + BOLD + "%s", playerName + RESET_BOLD_FAINT);
         }
         throw new ResponseException(400, "You are not logged in");
@@ -132,6 +137,9 @@ public class ChessClient {
 
             chessGame = server.joinGame(gameID, color);
 
+            ws = new WebSocketFacade(serverURL, notificationHandler);
+            ws.connectGame(authToken, gameID);
+
             state = State.PLAYING;
             teamColor = color.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
@@ -154,13 +162,14 @@ public class ChessClient {
 
             chessGame = server.observeGame(gameID);
 
+            ws = new WebSocketFacade(serverURL, notificationHandler);
+            ws.connectGame(authToken, gameID);
+
             state = State.OBSERVING;
 
             String result = "";
-            result += String.format(WHITE + "Observed game " + BOLD + "%s\n\n", gameName + RESET_BOLD_FAINT);
-            result += DrawBoard.getBlackPerspective(chessGame);
-            result += "\n\n";
-            result += DrawBoard.getWhitePerspective(chessGame);
+            result += String.format(WHITE + "Observing game " + BOLD + "%s\n\n", gameName + RESET_BOLD_FAINT);
+            result += redraw();
             return result;
         }
         throw new ResponseException(400, "Expected: observe <ID>");
@@ -180,6 +189,9 @@ public class ChessClient {
         state = State.SIGNEDIN;
 
         server.leaveGame(gameID, teamColor.toString());
+
+        ws.leaveGame(authToken, gameID);
+        ws = null;
 
         teamColor = null;
         chessGame = null;
@@ -221,6 +233,7 @@ public class ChessClient {
             String winner = (teamColor == ChessGame.TeamColor.WHITE) ? "Black" : "White";
             String result = String.format(WHITE + "You have resigned. " + BOLD + "%s" + RESET_BOLD_FAINT + " wins.", winner);
 
+            ws.resign(authToken, gameID);
             ChessBoard board = chessGame.getBoard();
             board.resetBoard();
             chessGame.setBoard(board);

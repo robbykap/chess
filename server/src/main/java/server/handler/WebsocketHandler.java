@@ -89,7 +89,7 @@ public class WebsocketHandler {
             AuthData authData = Server.userService.getAuthData(command.getAuthToken());
             GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
 
-            Notification notification = new Notification("%s has connected to the game" + authData.username());
+            Notification notification = new Notification("%s has connected to the game".formatted(authData.username()));
             broadcastMessage(command.getAuthToken(), notification);
 
             LoadGame loadGame = new LoadGame(gameData.game());
@@ -193,7 +193,7 @@ public class WebsocketHandler {
 
             Server.gameService.updateGame(command.getAuthToken(), gameData);
 
-            Notification notification = new Notification("%s has resigned".formatted(authData.username()));
+            Notification notification = new Notification("%s has forfeited!".formatted(authData.username()));
             broadcastMessage(command.getAuthToken(), notification, true);
         } catch (UnauthorizedException e) {
             sendError(session, new Error("Error: Not authorized"));
