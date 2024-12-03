@@ -81,4 +81,14 @@ public class UserService {
 
     };
 
+    public AuthData getAuthData(String authToken) throws UnauthorizedException {
+        // Get the AuthData from the AuthDAO, throw UnauthorizedException if not found
+        try {
+            return authDAO.getAuth(authToken);
+
+        } catch (DataAccessException e) {
+            throw new UnauthorizedException("Invalid authToken");
+        }
+    };
+
 }

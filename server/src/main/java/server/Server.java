@@ -5,19 +5,25 @@ import spark.*;
 
 import service.*;
 import dataaccess.*;
+import org.eclipse.jetty.websocket.api.Session;
 
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
     private UserHandler userHandler;
     private GameHandler gameHandler;
     private ClearHandler clearHandler;
 
+    public static GameService gameService;
+    public static UserService userService;
     private ClearService clearService;
 
+    public static ConcurrentHashMap<Session, Integer> sessionGameMap = new ConcurrentHashMap<>();
+
     private void setHandlers(AuthDAO authDAO, GameDAO gameDAO, UserDAO userDAO) {
-        GameService gameService = new GameService(gameDAO, authDAO);
-        UserService userService = new UserService(userDAO, authDAO);
+        gameService = new GameService(gameDAO, authDAO);
+        userService = new UserService(userDAO, authDAO);
         clearService = new ClearService(userDAO, authDAO, gameDAO);
 
         userHandler = new UserHandler(userService);
@@ -55,7 +61,7 @@ public class Server {
 
         Spark.staticFiles.location("web");
 
-        Spark.webSocket("/connect", WebsocketHandler.class);
+        Spark.webSocket("/ws", WebsocketHandler.class);
 
         Spark.delete("/db", (req, resp) -> clearHandler.clear(resp));
         Spark.post("/user", userHandler::register);

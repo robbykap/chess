@@ -157,4 +157,15 @@ public class GameService {
         }
 
     }
+
+    public GameData getGameData(String authToken, int gameID) throws UnauthorizedException {
+        // Verify the authToken, throw UnauthorizedException if invalid
+        try {
+            authDAO.getAuth(authToken);
+            return gameDAO.getGame(gameID);
+
+        } catch (DataAccessException e) {
+            throw new UnauthorizedException(e.getMessage());
+        }
+    }
 }
