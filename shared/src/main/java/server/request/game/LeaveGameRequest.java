@@ -1,3 +1,5 @@
 package server.request.game;
 
-public record LeaveGameRequest(String authToken, int gameID, String playerColor) {};
+import chess.ChessGame;
+
+public record LeaveGameRequest(String authToken, int gameID, ChessGame.TeamColor playerColor) {};

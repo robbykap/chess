@@ -15,6 +15,7 @@ import server.Server;
 import websocket.commands.Connect;
 import websocket.commands.Leave;
 import websocket.commands.Move;
+import websocket.commands.Resign;
 import websocket.messages.LoadGame;
 import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
@@ -116,11 +117,14 @@ public class WebsocketHandler implements WebSocketListener {
     private void handleLeave(Session session, Leave command) throws IOException {
         try {
             AuthData authData = Server.userService.getAuthData(command.getAuthToken());
+            GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
+            ChessGame.TeamColor playerColor = getPlayerColor(authData.username(), gameData);
 
             Notification notification = new Notification("%s has left the game".formatted(authData.username()));
             broadcastMessage(command.getAuthToken(), notification);
+            Server.gameService.leaveGame(command.getAuthToken(), playerColor, command.getGameID());
 
-        } catch (UnauthorizedException e) {
+        } catch (UnauthorizedException | BadRequestException e) {
             sendError(session, new Error("Error: Not authorized"));
         }
     }
@@ -181,6 +185,35 @@ public class WebsocketHandler implements WebSocketListener {
         }
     }
 
+    private void handleResign(Session session, Resign command) throws IOException {
+        try {
+            AuthData authData = Server.userService.getAuthData(command.getAuthToken());
+            GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
+            ChessGame.TeamColor playerColor = getPlayerColor(authData.username(), gameData);
+
+            if (playerColor == null) {
+                sendError(session, new Error("Error: Observer cannot resign"));
+                return;
+            }
+
+            if (gameData.game().isOver()) {
+                sendError(session, new Error("Error: Game is over"));
+                return;
+            }
+
+            gameData.game().setOver(true);
+
+            Server.gameService.updateGame(command.getAuthToken(), gameData);
+
+            Notification notification = new Notification("%s has resigned".formatted(authData.username()));
+            broadcastMessage(command.getAuthToken(), notification, true);
+        } catch (UnauthorizedException e) {
+            sendError(session, new Error("Error: Not authorized"));
+        } catch (BadRequestException e) {
+            sendError(session, new Error("Error: Invalid game"));
+        }
+    }
+
     public void broadcastMessage(String authToken , ServerMessage message) throws IOException {
         broadcastMessage(authToken, message, false);
     }
@@ -209,9 +242,9 @@ public class WebsocketHandler implements WebSocketListener {
     }
 
     private ChessGame.TeamColor getPlayerColor(String username, GameData gameData) {
-        if (gameData.whiteUsername().equals(username)) {
+        if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(username)) {
             return ChessGame.TeamColor.WHITE;
-        } else if (gameData.blackUsername().equals(username)) {
+        } else if (gameData.blackUsername() != null && gameData.blackUsername().equals(username)) {
             return ChessGame.TeamColor.BLACK;
         } else {
             return null;

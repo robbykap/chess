@@ -122,7 +122,7 @@ public class GameService {
 
     }
 
-    public void leaveGame(String authToken, String color, int gameID) throws UnauthorizedException {
+    public void leaveGame(String authToken, ChessGame.TeamColor color, int gameID) throws UnauthorizedException {
         // Verify the authToken, throw UnauthorizedException if invalid
         try {
             AuthData authData = authDAO.getAuth(authToken);
@@ -138,13 +138,13 @@ public class GameService {
             }
 
             switch (color) {
-                case "WHITE" -> {
+                case ChessGame.TeamColor.WHITE -> {
                     // Check if the requested color is already taken, throw AlreadyTakenException if taken
                     if (game.whiteUsername() != null && game.whiteUsername().equals(username)) {
                         gameDAO.updateGame(new GameData(gameID, null, game.blackUsername(), game.gameName(), game.game()));
                     }
                 }
-                case "BLACK" -> {
+                case ChessGame.TeamColor.BLACK -> {
                     // Check if the requested color is already taken, throw AlreadyTakenException if taken
                     if (game.blackUsername() != null && game.blackUsername().equals(username)) {
                         gameDAO.updateGame(new GameData(gameID, game.whiteUsername(), null, game.gameName(), game.game()));
