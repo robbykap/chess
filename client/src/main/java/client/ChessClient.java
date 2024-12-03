@@ -12,16 +12,19 @@ import ui.DrawBoard;
 public class ChessClient {
     private String playerName = null;
     private final ServerFacade server;
+    private WebSocketFacade ws;
     private final String serverURL;
+    private final NotificationHandler notificationHandler;
     private State state = State.SIGNEDOUT;
     private Integer gameID;
     private ChessGame chessGame;
     private ChessGame.TeamColor teamColor;
     private final Map<Integer, Map<String, Object>> gameDetails = new HashMap<>();
 
-    public ChessClient(String serverURL) {
+    public ChessClient(String serverURL, NotificationHandler notificationHandler) {
         this.server = new ServerFacade(serverURL);
         this.serverURL = serverURL;
+        this.notificationHandler = notificationHandler;
         this.gameID = null;
         this.chessGame = null;
         this.teamColor = null;
@@ -129,6 +132,9 @@ public class ChessClient {
             Map<String, Object> gameInfo = gameDetails.get(game);
             gameID = ((Double) gameInfo.get("gameID")).intValue();
             String gameName = (String) gameInfo.get("gameName");
+
+            ws = new WebSocketFacade(serverURL, notificationHandler);
+            ws.joinGame(playerName);
 
             chessGame = server.joinGame(gameID, color);
 
