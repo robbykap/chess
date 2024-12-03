@@ -6,11 +6,11 @@ import com.google.gson.Gson;
 import dataaccess.BadRequestException;
 import dataaccess.UnauthorizedException;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.WebSocketListener;
 
 import model.AuthData;
 import model.GameData;
 
+import org.eclipse.jetty.websocket.api.annotations.*;
 import server.Server;
 import websocket.commands.Connect;
 import websocket.commands.Leave;
@@ -25,23 +25,16 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class WebsocketHandler implements WebSocketListener {
+@WebSocket
+public class WebsocketHandler {
 
-    private Session session;
-
-    @Override
+    @OnWebSocketConnect
     public void onWebSocketConnect(Session session) {
-        this.session = session;
         System.out.println("WebSocket Connected: " + session.getRemoteAddress().getHostName());
     }
 
-    @Override
-    public void onWebSocketBinary(byte[] bytes, int i, int i1) {
-        System.out.println("Binary message received");
-    }
-
-    @Override
-    public void onWebSocketText(String message) {
+    @OnWebSocketMessage
+    public void onWebSocketText(Session session, String message) {
         System.out.printf("Received: %s%n", message);
         try {
             if (message.contains("\"commandType\":\"CONNECT\"")) {
@@ -69,12 +62,10 @@ public class WebsocketHandler implements WebSocketListener {
 
             } else if (message.contains("\"commandType\":\"MAKE_MOVE\"")) {
                 Move command = new Gson().fromJson(message, Move.class);
-                session = Server.sessionGameMap.get(command.getGameID()).get(command.getAuthToken());
                 handleMove(session, command);
 
             } else if (message.contains("\"commandType\":\"RESIGN\"")) {
                 Resign command = new Gson().fromJson(message, Resign.class);
-                session = Server.sessionGameMap.get(command.getGameID()).get(command.getAuthToken());
                 handleResign(session, command);
             }
         } catch (IOException e) {
@@ -82,13 +73,12 @@ public class WebsocketHandler implements WebSocketListener {
         }
     }
 
-    @Override
+    @OnWebSocketClose
     public void onWebSocketClose(int statusCode, String reason) {
         System.out.printf("WebSocket Closed. Code: %d, Reason: %s%n", statusCode, reason);
-        this.session = null;
     }
 
-    @Override
+    @OnWebSocketError
     public void onWebSocketError(Throwable cause) {
         System.err.println("WebSocket Error: " + cause.getMessage());
         cause.printStackTrace();
