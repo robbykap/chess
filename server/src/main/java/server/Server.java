@@ -6,8 +6,6 @@ import spark.*;
 import service.*;
 import dataaccess.*;
 
-import server.websocket.WebsocketHandler;
-
 import java.util.Objects;
 
 public class Server {
@@ -57,7 +55,7 @@ public class Server {
 
         Spark.staticFiles.location("web");
 
-        Spark.webSocket("/ws", WebsocketHandler);
+        Spark.webSocket("/connect", WebsocketHandler.class);
 
         Spark.delete("/db", (req, resp) -> clearHandler.clear(resp));
         Spark.post("/user", userHandler::register);
