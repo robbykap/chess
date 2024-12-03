@@ -9,8 +9,7 @@ import server.request.user.RegisterRequest;
 import java.util.Collection;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class ServerFacadeTests {
@@ -125,7 +124,7 @@ public class ServerFacadeTests {
             if (game.get("gameName").equals("game1")) {
                 int gameID = Double.valueOf(game.get("gameID").toString()).intValue();
                 ChessGame gameData = facade.joinGame(gameID, "WHITE");
-                assertTrue(gameData != null);
+                assertNotNull(gameData);
             }
         }
     }
@@ -166,7 +165,7 @@ public class ServerFacadeTests {
             if (game.get("gameName").equals("game1")) {
                 int gameID = Double.valueOf(game.get("gameID").toString()).intValue();
                 ChessGame gameData = facade.joinGame(gameID, "WHITE");
-                assertTrue(gameData != null);
+                assertNotNull(gameData);
             }
         }
     }

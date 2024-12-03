@@ -208,9 +208,9 @@ public class WebsocketHandler {
 
     public void broadcastMessage(String authToken , ServerMessage message, boolean toSelf) throws IOException {
         System.out.printf("Broadcasting (toSelf: %s): %s%n", toSelf, new Gson().toJson(message));
-        int GameID = Server.authDataGameMap.get(authToken);
+        int gameID = Server.authDataGameMap.get(authToken);
 
-        for (Map.Entry<String, Session> entry : Server.sessionGameMap.get(GameID).entrySet()) {
+        for (Map.Entry<String, Session> entry : Server.sessionGameMap.get(gameID).entrySet()) {
             String user = entry.getKey();
             Session session = entry.getValue();
 
