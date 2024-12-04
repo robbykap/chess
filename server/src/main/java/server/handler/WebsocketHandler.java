@@ -153,12 +153,12 @@ private void sendNotification(String authToken, String username, ChessGame.TeamC
             if (gameData.game().isInCheckmate(oppColor)) {
                 gameData.game().setOver(true);
                 Notification notification = new Notification("Checkmate! %s wins!".formatted(authData.username()));
-                broadcastMessage(command.getAuthToken(), notification, true);
+                broadcastMessage(command.getAuthToken(), notification);
 
             } else if (gameData.game().isInStalemate(oppColor)) {
                 gameData.game().setOver(true);
                 Notification notification = new Notification("Stalemate! Game is a draw");
-                broadcastMessage(command.getAuthToken(), notification, true);
+                broadcastMessage(command.getAuthToken(), notification);
 
             } else if (gameData.game().isInCheck(oppColor)) {
                 Notification notification = new Notification("Check! %s is in check".formatted(authData.username()));
