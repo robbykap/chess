@@ -18,7 +18,7 @@ public class ChessClient {
     private final String serverURL;
     private Integer gameID;
     private ChessGame chessGame;
-    private ChessGame.TeamColor teamColor;
+    public ChessGame.TeamColor teamColor;
     private final Map<Integer, Map<String, Object>> gameDetails = new HashMap<>();
     private String authToken = null;
 
@@ -137,15 +137,16 @@ public class ChessClient {
 
             chessGame = server.joinGame(gameID, color);
 
-            ws = new WebSocketFacade(serverURL, notificationHandler);
+             if (ws == null) {
+                ws = new WebSocketFacade(serverURL, notificationHandler);
+            }
             ws.connectGame(authToken, gameID);
 
             state = State.PLAYING;
             teamColor = color.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
             String result = "";
-            result += String.format(WHITE + "Joined game " + BOLD + "%s\n\n", gameName + RESET_BOLD_FAINT);
-            result += redraw();
+            result += String.format(WHITE + "Joined game " + BOLD + "%s", gameName + RESET_BOLD_FAINT);
             return result;
         }
         throw new ResponseException(400, "Expected: join <ID> [WHITE|BLACK]");
@@ -162,14 +163,15 @@ public class ChessClient {
 
             chessGame = server.observeGame(gameID);
 
-            ws = new WebSocketFacade(serverURL, notificationHandler);
+            if (ws == null) {
+                ws = new WebSocketFacade(serverURL, notificationHandler);
+            }
             ws.connectGame(authToken, gameID);
 
             state = State.OBSERVING;
 
             String result = "";
-            result += String.format(WHITE + "Observing game " + BOLD + "%s\n\n", gameName + RESET_BOLD_FAINT);
-            result += redraw();
+            result += String.format(WHITE + "Observing game " + BOLD + "%s", gameName + RESET_BOLD_FAINT);
             return result;
         }
         throw new ResponseException(400, "Expected: observe <ID>");
@@ -201,7 +203,7 @@ public class ChessClient {
 
     public String move(String... params) throws ResponseException, InvalidMoveException {
         assertInGame();
-        assertUserTurn();
+        assertWS();
         if (params.length == 2 && params[0].matches("[a-h][1-8]") && params[1].matches("[a-h][1-8]")) {
             String[] start = params[0].split("");
             String[] end = params[1].split("");
@@ -212,12 +214,9 @@ public class ChessClient {
             ChessPosition startPiece = new ChessPosition(Integer.parseInt(start[1]), startCol);
             ChessPosition endPiece = new ChessPosition(Integer.parseInt(end[1]), endCol);
 
-            try {
-                chessGame.makeMove(new ChessMove(startPiece, endPiece, null));
-            } catch (InvalidMoveException e) {
-                return redraw() + "\n\nInvalid move";
-            }
-            return redraw();
+            ws.move(authToken, gameID, new ChessMove(startPiece, endPiece, null));
+            chessGame.makeMove(new ChessMove(startPiece, endPiece, null));
+            return "Made move from " + params[0] + " to " + params[1];
         }
         throw new ResponseException(400, "Expected: move <START POS> <ENDING POS>");
     }
@@ -230,15 +229,8 @@ public class ChessClient {
         String response = scanner.nextLine().trim().toLowerCase();
 
         if (response.equals("yes")) {
-            String winner = (teamColor == ChessGame.TeamColor.WHITE) ? "Black" : "White";
-            String result = String.format(WHITE + "You have resigned. " + BOLD + "%s" + RESET_BOLD_FAINT + " wins.", winner);
-
             ws.resign(authToken, gameID);
-            ChessBoard board = chessGame.getBoard();
-            board.resetBoard();
-            chessGame.setBoard(board);
-
-            return result + "\n\n" + redraw();
+            return "Forfeited the game.";
         } else {
             return "Resignation cancelled.";
         }
@@ -246,12 +238,12 @@ public class ChessClient {
 
     public String highlight(String... params) throws ResponseException {
         assertInGame();
-        assertUserTurn();
+        assertWS();
         if (params.length == 1 && params[0].matches("[a-h][1-8]")) {
             String[] pos = params[0].split("");
             int col = pos[0].charAt(0) - 96;
             ChessPosition piece = new ChessPosition(Integer.parseInt(pos[1]), col);
-            String result = DrawBoard.highlightMoves(chessGame, piece);
+            String result = DrawBoard.highlightMoves(chessGame, piece, teamColor);
             DrawBoard.initializeBoard(chessGame);
             return result;
         }
@@ -321,9 +313,9 @@ public class ChessClient {
         }
     }
 
-    private void assertUserTurn() throws ResponseException {
-        if (chessGame.getTeamTurn() != teamColor) {
-            throw new ResponseException(400, "It is not your turn");
+    private void assertWS() throws ResponseException {
+        if (ws == null) {
+            throw new ResponseException(400, "You must be connected to a game");
         }
     }
 
@@ -331,4 +323,11 @@ public class ChessClient {
         return state.toString();
     }
 
+    public ChessGame.TeamColor teamColor() {
+        return teamColor;
+    }
+
+    public void setGame(ChessGame game) {
+        this.chessGame = game;
+    }
 }

@@ -105,7 +105,7 @@ public class DrawBoard {
         return boardString.toString();
     }
 
-    public static String highlightMoves(ChessGame game, ChessPosition pos) throws ResponseException {
+    public static String highlightMoves(ChessGame game, ChessPosition pos, ChessGame.TeamColor color) throws ResponseException {
         highlight = true;
 
         ChessPiece piece = game.getBoard().getPiece(pos);
@@ -114,16 +114,16 @@ public class DrawBoard {
             throw new ResponseException(400, "No piece at position " + (char) (pos.getColumn() + 96) + pos.getRow());
         }
 
-        if (piece.getTeamColor() != game.getTeamTurn()) {
-            throw new ResponseException(400, "Requested piece is not on your team");
-        }
-
         Collection<ChessMove> moves = game.validMoves(pos);
         for (ChessMove move : moves) {
             ChessPosition endPos = move.getEndPosition();
-            board[endPos.getRow() - 1][7 - (endPos.getColumn() - 1)] = SET_BG_COLOR_GREEN + "   " + RESET_BG_COLOR;
+            board[endPos.getRow() - 1][7 - (endPos.getColumn() - 1)] = SET_BG_COLOR_GREEN + FAINT + FAINT + "   " + RESET_BG_COLOR;
         }
 
-        return piece.getTeamColor() == ChessGame.TeamColor.WHITE ? getWhitePerspective(game) : getBlackPerspective(game);
+        if (color == ChessGame.TeamColor.BLACK) {
+            return getBlackPerspective(game);
+        } else {
+            return getWhitePerspective(game);
+        }
     }
 }

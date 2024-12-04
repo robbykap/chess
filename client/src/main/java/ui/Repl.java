@@ -1,9 +1,11 @@
 package ui;
 
+import chess.ChessGame;
 import client.ChessClient;
 import client.NotificationHandler;
 import websocket.messages.LoadGame;
 import websocket.messages.Notification;
+import websocket.messages.Error;
 
 import java.util.Scanner;
 
@@ -46,9 +48,37 @@ public class Repl implements NotificationHandler {
     @Override
     public void notify(Notification notification) {
         if (notification.getMessage() != null) {
+            System.out.print("\033[2K\033[2K");
             System.out.print("\n" + MAGENTA + BOLD + "[Notification] " + RESET_BOLD_FAINT + ">>> " + GREEN + FAINT);
-            System.out.println(MAGENTA + BOLD + notification.getMessage());
+            System.out.print(MAGENTA + BOLD + notification.getMessage());
+            System.out.println("\n");
             printPrompt();
         }
+    }
+
+    @Override
+    public void error(Error error) {
+        System.out.print("\033[2K\033[2K");
+        System.out.print("\n" + RED + BOLD + "[Error] " + RESET_BOLD_FAINT + ">>> " + GREEN + FAINT);
+        System.out.print(RED + BOLD + error.getMessage());
+        System.out.println("\n");
+        printPrompt();
+    }
+
+    @Override
+    public void loadGame(LoadGame loadGame) {
+        client.setGame(loadGame.getGame());
+
+        DrawBoard.initializeBoard(loadGame.getGame());
+        ChessGame.TeamColor teamColor = client.teamColor();
+
+        if (teamColor == ChessGame.TeamColor.BLACK) {
+            System.out.print("\n" + DrawBoard.getBlackPerspective(loadGame.getGame()));
+        } else {
+            System.out.print("\n" + DrawBoard.getWhitePerspective(loadGame.getGame()));
+        }
+
+        System.out.println("\n");
+        printPrompt();
     }
 }
