@@ -84,38 +84,47 @@ public class WebsocketHandler {
         cause.printStackTrace();
     }
 
-    private void handleConnectCommand(Session session, ConnectCommand command) throws IOException {
-        try {
-            AuthData authData = Server.userService.getAuthData(command.getAuthToken());
-            GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
+ private void handleConnectCommand(Session session, ConnectCommand command) throws IOException {
+    try {
+        AuthData authData = Server.userService.getAuthData(command.getAuthToken());
+        GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
+        ChessGame.TeamColor playerColor = getPlayerColor(authData.username(), gameData);
 
-            Notification notification = new Notification("%s has connected to the game".formatted(authData.username()));
-            broadcastMessage(command.getAuthToken(), notification);
+        sendNotification(command.getAuthToken(), authData.username(), playerColor);
 
-            LoadGame loadGame = new LoadGame(gameData.game());
-            sendMessage(session, loadGame);
+        LoadGame loadGame = new LoadGame(gameData.game());
+        sendMessage(session, loadGame);
 
-        } catch (UnauthorizedException e) {
-            sendError(session, new Error("Error: Not authorized"));
-        } catch (BadRequestException e) {
-            sendError(session, new Error("Error: Not a valid request"));
-        }
+    } catch (UnauthorizedException e) {
+        sendError(session, new Error("Error: Not authorized"));
+    } catch (BadRequestException e) {
+        sendError(session, new Error("Error: Not a valid request"));
     }
+}
 
-    private void handleLeaveCommand(Session session, LeaveCommand command) throws IOException {
-        try {
-            AuthData authData = Server.userService.getAuthData(command.getAuthToken());
-            GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
-            ChessGame.TeamColor playerColor = getPlayerColor(authData.username(), gameData);
+private void handleLeaveCommand(Session session, LeaveCommand command) throws IOException {
+    try {
+        AuthData authData = Server.userService.getAuthData(command.getAuthToken());
+        GameData gameData = Server.gameService.getGameData(command.getAuthToken(), command.getGameID());
+        ChessGame.TeamColor playerColor = getPlayerColor(authData.username(), gameData);
 
-            Notification notification = new Notification("%s has left the game".formatted(authData.username()));
-            broadcastMessage(command.getAuthToken(), notification);
-            Server.gameService.leaveGame(command.getAuthToken(), playerColor, command.getGameID());
+        sendNotification(command.getAuthToken(), authData.username(), playerColor);
+        Server.gameService.leaveGame(command.getAuthToken(), playerColor, command.getGameID());
 
-        } catch (UnauthorizedException | BadRequestException e) {
-            sendError(session, new Error("Error: Not authorized"));
-        }
+    } catch (UnauthorizedException | BadRequestException e) {
+        sendError(session, new Error("Error: Not authorized"));
     }
+}
+
+private void sendNotification(String authToken, String username, ChessGame.TeamColor playerColor) throws IOException {
+    Notification notification;
+    if (playerColor == null) {
+        notification = new Notification("Observer %s has connected to the game".formatted(username));
+    } else {
+        notification = new Notification("Player %s has connected to the game".formatted(username));
+    }
+    broadcastMessage(authToken, notification);
+}
 
     public void handleMoveCommand(Session session, MoveCommand command) throws IOException {
         try {
@@ -144,12 +153,12 @@ public class WebsocketHandler {
             if (gameData.game().isInCheckmate(oppColor)) {
                 gameData.game().setOver(true);
                 Notification notification = new Notification("Checkmate! %s wins!".formatted(authData.username()));
-                broadcastMessage(command.getAuthToken(), notification);
+                broadcastMessage(command.getAuthToken(), notification, true);
 
             } else if (gameData.game().isInStalemate(oppColor)) {
                 gameData.game().setOver(true);
                 Notification notification = new Notification("Stalemate! Game is a draw");
-                broadcastMessage(command.getAuthToken(), notification);
+                broadcastMessage(command.getAuthToken(), notification, true);
 
             } else if (gameData.game().isInCheck(oppColor)) {
                 Notification notification = new Notification("Check! %s is in check".formatted(authData.username()));

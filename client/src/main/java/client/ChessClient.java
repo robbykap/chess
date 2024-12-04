@@ -190,8 +190,6 @@ public class ChessClient {
         assertInGame();
         state = State.SIGNEDIN;
 
-        server.leaveGame(gameID, teamColor.toString());
-
         ws.leaveGame(authToken, gameID);
         ws = null;
 
@@ -214,8 +212,16 @@ public class ChessClient {
             ChessPosition startPiece = new ChessPosition(Integer.parseInt(start[1]), startCol);
             ChessPosition endPiece = new ChessPosition(Integer.parseInt(end[1]), endCol);
 
+            try {
+                if (chessGame.isOver()) {
+                    return "Game is over";
+                }
+                chessGame.makeMove(new ChessMove(startPiece, endPiece, null));
+            } catch (InvalidMoveException e) {
+                return e.getMessage();
+            }
+
             ws.move(authToken, gameID, new ChessMove(startPiece, endPiece, null));
-            chessGame.makeMove(new ChessMove(startPiece, endPiece, null));
             return "Made move from " + params[0] + " to " + params[1];
         }
         throw new ResponseException(400, "Expected: move <START POS> <ENDING POS>");
