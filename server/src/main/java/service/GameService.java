@@ -150,6 +150,9 @@ public class GameService {
                         gameDAO.updateGame(new GameData(gameID, game.whiteUsername(), null, game.gameName(), game.game()));
                     }
                 }
+                case null -> {
+                    // Do nothing
+                }
             }
 
         } catch (DataAccessException e) {
