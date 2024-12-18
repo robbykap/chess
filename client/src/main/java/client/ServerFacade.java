@@ -39,9 +39,6 @@ public class ServerFacade {
         return http.joinGame(gameID, color);
     }
 
-    public void leaveGame(int gameID, String color) throws ResponseException {
-        http.leaveGame(gameID, color);
-    }
 
     public ChessGame observeGame(int gameID) throws ResponseException {
         return http.observeGame(gameID);
